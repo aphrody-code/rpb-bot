@@ -5,6 +5,10 @@ import "@sapphire/plugin-subcommands/register";
 import { GatewayIntentBits, Partials } from "discord.js";
 import "dotenv/config";
 
+console.log("Starting bot...");
+console.log("DISCORD_TOKEN exists:", !!process.env.DISCORD_TOKEN);
+console.log("REDIS_HOST:", process.env.REDIS_HOST);
+
 try {
   const client = new SapphireClient({
     baseUserDirectory: import.meta.dirname,
@@ -28,8 +32,11 @@ try {
     },
   });
 
+  console.log("Client created, logging in...");
   await client.login(process.env.DISCORD_TOKEN);
+  console.log("Login completed!");
 } catch (err) {
+  console.error("Failed to login:", err);
   container.logger.error("Failed to login:", err);
   process.exitCode = 1;
 }
