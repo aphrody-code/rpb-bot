@@ -1,0 +1,6 @@
+{
+  "extends": "@tsconfig/node24",
+  "compilerOptions": {
+    "noEmit": true
+  }
+}
