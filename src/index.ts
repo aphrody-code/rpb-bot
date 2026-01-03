@@ -7,13 +7,7 @@ import "dotenv/config";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-console.log("Starting bot...");
-console.log("DISCORD_TOKEN exists:", !!process.env.DISCORD_TOKEN);
-console.log("REDIS_HOST:", process.env.REDIS_HOST);
-console.log("Base directory:", __dirname);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 try {
   const client = new SapphireClient({
@@ -38,11 +32,8 @@ try {
     },
   });
 
-  console.log("Client created, logging in...");
   await client.login(process.env.DISCORD_TOKEN);
-  console.log("Login completed!");
 } catch (err) {
-  console.error("Failed to login:", err);
   container.logger.error("Failed to login:", err);
   process.exitCode = 1;
 }
