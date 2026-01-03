@@ -43,11 +43,13 @@ import { Command } from "@sapphire/framework";
 export class MaCommande extends Command {
   override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand((builder) =>
-      builder.setName("macommande").setDescription("Description")
+      builder.setName("macommande").setDescription("Description"),
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     return interaction.reply("Hello!");
   }
 }

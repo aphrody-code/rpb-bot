@@ -1,5 +1,5 @@
 import { Command } from "@sapphire/framework";
-import { EmbedBuilder, PermissionFlagsBits, ChannelType } from "discord.js";
+import { ChannelType, EmbedBuilder, PermissionFlagsBits } from "discord.js";
 import { Colors, RPB } from "../../lib/constants.js";
 
 export class ScanCommand extends Command {
@@ -48,11 +48,16 @@ export class ScanCommand extends Command {
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const subcommand = interaction.options.getSubcommand();
 
     if (!interaction.guild) {
-      return interaction.reply({ content: "❌ Cette commande doit être utilisée dans un serveur.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ Cette commande doit être utilisée dans un serveur.",
+        ephemeral: true,
+      });
     }
 
     switch (subcommand) {
@@ -63,7 +68,10 @@ export class ScanCommand extends Command {
       case "tout":
         return this.scanAll(interaction);
       default:
-        return interaction.reply({ content: "❌ Sous-commande inconnue.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ Sous-commande inconnue.",
+          ephemeral: true,
+        });
     }
   }
 
@@ -83,7 +91,10 @@ export class ScanCommand extends Command {
         case "text":
           return ch.type === ChannelType.GuildText;
         case "voice":
-          return ch.type === ChannelType.GuildVoice || ch.type === ChannelType.GuildStageVoice;
+          return (
+            ch.type === ChannelType.GuildVoice ||
+            ch.type === ChannelType.GuildStageVoice
+          );
         case "category":
           return ch.type === ChannelType.GuildCategory;
         case "announcement":
@@ -96,7 +107,10 @@ export class ScanCommand extends Command {
     });
 
     // Group by category
-    const categories = new Map<string, { name: string; channels: { name: string; id: string; type: string }[] }>();
+    const categories = new Map<
+      string,
+      { name: string; channels: { name: string; id: string; type: string }[] }
+    >();
     const noCategory: { name: string; id: string; type: string }[] = [];
 
     for (const [, channel] of filtered) {
@@ -115,7 +129,10 @@ export class ScanCommand extends Command {
       } else if (channel.parentId) {
         if (!categories.has(channel.parentId)) {
           const parent = channels.get(channel.parentId);
-          categories.set(channel.parentId, { name: parent?.name ?? "Inconnu", channels: [] });
+          categories.set(channel.parentId, {
+            name: parent?.name ?? "Inconnu",
+            channels: [],
+          });
         }
         categories.get(channel.parentId)!.channels.push(channelInfo);
       } else {
@@ -140,7 +157,9 @@ export class ScanCommand extends Command {
     for (const [catId, cat] of categories) {
       content += `## 📂 ${cat.name}\n`;
       content += `📂 \`${catId}\` - ${cat.name}\n`;
-      for (const ch of cat.channels.sort((a, b) => a.name.localeCompare(b.name))) {
+      for (const ch of cat.channels.sort((a, b) =>
+        a.name.localeCompare(b.name),
+      )) {
         content += `${ch.type} \`${ch.id}\` - ${ch.name}\n`;
       }
       content += `\n`;
@@ -187,7 +206,10 @@ export class ScanCommand extends Command {
     content += "export const ROLES = {\n";
     for (const role of sorted) {
       if (role.name === "@everyone") continue;
-      const safeName = role.name.toUpperCase().replace(/[^A-Z0-9]/g, "_").replace(/_+/g, "_");
+      const safeName = role.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "_")
+        .replace(/_+/g, "_");
       content += `  ${safeName}: "${role.id}",\n`;
     }
     content += "} as const;\n";
@@ -221,57 +243,85 @@ export class ScanCommand extends Command {
 
     // Channels
     content += `export const CHANNELS = {\n`;
-    
-    const textChannels = channels.filter((ch) => ch?.type === ChannelType.GuildText);
-    const voiceChannels = channels.filter((ch) => ch?.type === ChannelType.GuildVoice);
-    const categories = channels.filter((ch) => ch?.type === ChannelType.GuildCategory);
-    const announcements = channels.filter((ch) => ch?.type === ChannelType.GuildAnnouncement);
+
+    const textChannels = channels.filter(
+      (ch) => ch?.type === ChannelType.GuildText,
+    );
+    const voiceChannels = channels.filter(
+      (ch) => ch?.type === ChannelType.GuildVoice,
+    );
+    const categories = channels.filter(
+      (ch) => ch?.type === ChannelType.GuildCategory,
+    );
+    const announcements = channels.filter(
+      (ch) => ch?.type === ChannelType.GuildAnnouncement,
+    );
     const forums = channels.filter((ch) => ch?.type === ChannelType.GuildForum);
 
     content += `  // Catégories (${categories.size})\n`;
     for (const [, ch] of categories) {
       if (!ch) continue;
-      const safeName = ch.name.toUpperCase().replace(/[^A-Z0-9]/g, "_").replace(/_+/g, "_");
+      const safeName = ch.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "_")
+        .replace(/_+/g, "_");
       content += `  CAT_${safeName}: "${ch.id}",\n`;
     }
 
     content += `\n  // Salons textuels (${textChannels.size})\n`;
     for (const [, ch] of textChannels) {
       if (!ch) continue;
-      const safeName = ch.name.toUpperCase().replace(/[^A-Z0-9]/g, "_").replace(/_+/g, "_");
+      const safeName = ch.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "_")
+        .replace(/_+/g, "_");
       content += `  ${safeName}: "${ch.id}",\n`;
     }
 
     content += `\n  // Salons d'annonces (${announcements.size})\n`;
     for (const [, ch] of announcements) {
       if (!ch) continue;
-      const safeName = ch.name.toUpperCase().replace(/[^A-Z0-9]/g, "_").replace(/_+/g, "_");
+      const safeName = ch.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "_")
+        .replace(/_+/g, "_");
       content += `  ANNONCE_${safeName}: "${ch.id}",\n`;
     }
 
     content += `\n  // Salons vocaux (${voiceChannels.size})\n`;
     for (const [, ch] of voiceChannels) {
       if (!ch) continue;
-      const safeName = ch.name.toUpperCase().replace(/[^A-Z0-9]/g, "_").replace(/_+/g, "_");
+      const safeName = ch.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "_")
+        .replace(/_+/g, "_");
       content += `  VOICE_${safeName}: "${ch.id}",\n`;
     }
 
     content += `\n  // Forums (${forums.size})\n`;
     for (const [, ch] of forums) {
       if (!ch) continue;
-      const safeName = ch.name.toUpperCase().replace(/[^A-Z0-9]/g, "_").replace(/_+/g, "_");
+      const safeName = ch.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "_")
+        .replace(/_+/g, "_");
       content += `  FORUM_${safeName}: "${ch.id}",\n`;
     }
 
     content += `} as const;\n\n`;
 
     // Roles
-    const sortedRoles = [...roles.values()].sort((a, b) => b.position - a.position);
+    const sortedRoles = [...roles.values()].sort(
+      (a, b) => b.position - a.position,
+    );
 
     content += `export const ROLES = {\n`;
     for (const role of sortedRoles) {
       if (role.name === "@everyone") continue;
-      const safeName = role.name.toUpperCase().replace(/[^A-Z0-9]/g, "_").replace(/_+/g, "_");
+      const safeName = role.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "_")
+        .replace(/_+/g, "_");
       content += `  ${safeName}: "${role.id}", // ${role.hexColor} - ${role.members.size} membres\n`;
     }
     content += `} as const;\n\n`;

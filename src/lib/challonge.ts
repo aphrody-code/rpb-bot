@@ -122,14 +122,20 @@ export class ChallongeClient {
     if (params?.per_page) query.set("per_page", params.per_page.toString());
 
     const queryString = query.toString() ? `?${query.toString()}` : "";
-    return this.request<ApiResponse<Tournament[]>>("GET", `/tournaments${queryString}`);
+    return this.request<ApiResponse<Tournament[]>>(
+      "GET",
+      `/tournaments${queryString}`,
+    );
   }
 
   /**
    * Get a single tournament
    */
   async getTournament(tournamentId: string): Promise<ApiResponse<Tournament>> {
-    return this.request<ApiResponse<Tournament>>("GET", `/tournaments/${tournamentId}`);
+    return this.request<ApiResponse<Tournament>>(
+      "GET",
+      `/tournaments/${tournamentId}`,
+    );
   }
 
   /**
@@ -138,7 +144,11 @@ export class ChallongeClient {
   async createTournament(data: {
     name: string;
     url?: string;
-    tournamentType?: "single elimination" | "double elimination" | "round robin" | "swiss";
+    tournamentType?:
+      | "single elimination"
+      | "double elimination"
+      | "round robin"
+      | "swiss";
     description?: string;
     gameName?: string;
     startAt?: string;
@@ -195,7 +205,9 @@ export class ChallongeClient {
   /**
    * List participants
    */
-  async listParticipants(tournamentId: string): Promise<ApiResponse<Participant[]>> {
+  async listParticipants(
+    tournamentId: string,
+  ): Promise<ApiResponse<Participant[]>> {
     return this.request<ApiResponse<Participant[]>>(
       "GET",
       `/tournaments/${tournamentId}/participants`,
@@ -236,7 +248,7 @@ export class ChallongeClient {
    */
   async bulkCreateParticipants(
     tournamentId: string,
-    participants: Array<{ name: string; seed?: number }>,
+    participants: { name: string; seed?: number }[],
   ): Promise<ApiResponse<Participant[]>> {
     return this.request<ApiResponse<Participant[]>>(
       "POST",
@@ -256,7 +268,10 @@ export class ChallongeClient {
   /**
    * Delete a participant
    */
-  async deleteParticipant(tournamentId: string, participantId: string): Promise<void> {
+  async deleteParticipant(
+    tournamentId: string,
+    participantId: string,
+  ): Promise<void> {
     await this.request(
       "DELETE",
       `/tournaments/${tournamentId}/participants/${participantId}`,
@@ -295,7 +310,10 @@ export class ChallongeClient {
   /**
    * Get a match
    */
-  async getMatch(tournamentId: string, matchId: string): Promise<ApiResponse<Match>> {
+  async getMatch(
+    tournamentId: string,
+    matchId: string,
+  ): Promise<ApiResponse<Match>> {
     return this.request<ApiResponse<Match>>(
       "GET",
       `/tournaments/${tournamentId}/matches/${matchId}`,
@@ -331,7 +349,10 @@ export class ChallongeClient {
   /**
    * Mark match as underway
    */
-  async markMatchUnderway(tournamentId: string, matchId: string): Promise<ApiResponse<Match>> {
+  async markMatchUnderway(
+    tournamentId: string,
+    matchId: string,
+  ): Promise<ApiResponse<Match>> {
     return this.request<ApiResponse<Match>>(
       "PUT",
       `/tournaments/${tournamentId}/matches/${matchId}/change_state`,
@@ -365,4 +386,4 @@ export function getChallongeClient(): ChallongeClient {
   return challongeClient;
 }
 
-export type { Tournament, Participant, Match, ApiResponse };
+export type { ApiResponse, Match, Participant, Tournament };

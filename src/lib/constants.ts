@@ -1,11 +1,11 @@
 export const Colors = {
-  Primary: 0xdc2626,     // RPB Red (from logo)
-  Secondary: 0xfbbf24,   // RPB Gold/Yellow (from logo)
-  Success: 0x22c55e,     // Green
-  Warning: 0xf59e0b,     // Orange
-  Error: 0xef4444,       // Red
-  Info: 0x3b82f6,        // Blue
-  Beyblade: 0x8b5cf6,    // Purple for Beyblade
+  Primary: 0xdc2626, // RPB Red (from logo)
+  Secondary: 0xfbbf24, // RPB Gold/Yellow (from logo)
+  Success: 0x22c55e, // Green
+  Warning: 0xf59e0b, // Orange
+  Error: 0xef4444, // Red
+  Info: 0x3b82f6, // Blue
+  Beyblade: 0x8b5cf6, // Purple for Beyblade
 } as const;
 
 export const Emojis = {

@@ -1,4 +1,4 @@
-# 🚨 OFFICIEL 🚨 
+# 🚨 OFFICIEL 🚨
 
 ## La RPB passe au niveau supérieur !
 
@@ -12,13 +12,13 @@ Nous avons l'immense plaisir de vous annoncer notre tout premier tournoi compét
 
 ## 🏆 LE BEY-TAMASHII SERIES #1 🏆
 
-| Info | Détail |
-|------|--------|
-| 📅 **Date** | Dimanche 11 janvier 2026 |
-| 🕑 **Heure** | Début à 14h00 (Ouverture des inscriptions/check-in à 13h00) |
-| 📍 **Lieu** | Dernier Bar Avant la Fin du Monde, 19 Avenue Victoria, 75001 Paris |
-| 🛠️ **Format** | 3on3 classique en Double éliminations (pas de Ban-list ou de limited-list pour le moment) |
-| 🔗 **Inscription** | https://challonge.com/fr/B_TS1 (limité à 64 joueurs) |
+| Info               | Détail                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| 📅 **Date**        | Dimanche 11 janvier 2026                                                                  |
+| 🕑 **Heure**       | Début à 14h00 (Ouverture des inscriptions/check-in à 13h00)                               |
+| 📍 **Lieu**        | Dernier Bar Avant la Fin du Monde, 19 Avenue Victoria, 75001 Paris                        |
+| 🛠️ **Format**      | 3on3 classique en Double éliminations (pas de Ban-list ou de limited-list pour le moment) |
+| 🔗 **Inscription** | https://challonge.com/fr/B_TS1 (limité à 64 joueurs)                                      |
 
 > Un règlement complet sera envoyé dans les prochains jours.
 
@@ -38,4 +38,4 @@ Nous avons l'immense plaisir de vous annoncer notre tout premier tournoi compét
 
 ---
 
-*Restez branchés, de nouvelles annonces risquent de pop soon...* 👀
+_Restez branchés, de nouvelles annonces risquent de pop soon..._ 👀

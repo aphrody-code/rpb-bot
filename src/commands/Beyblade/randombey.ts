@@ -1,19 +1,35 @@
 import { Command } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import { Colors, RPB } from "../../lib/constants.js";
+import { RPB } from "../../lib/constants.js";
 
 // Beyblade parts database
 const parts = {
   blades: [
-    "Dran Sword", "Hells Scythe", "Wizard Arrow", "Knight Shield", "Leon Claw",
-    "Phoenix Wing", "Shark Edge", "Unicorn Sting", "Cobalt Drake", "Viper Tail",
+    "Dran Sword",
+    "Hells Scythe",
+    "Wizard Arrow",
+    "Knight Shield",
+    "Leon Claw",
+    "Phoenix Wing",
+    "Shark Edge",
+    "Unicorn Sting",
+    "Cobalt Drake",
+    "Viper Tail",
   ],
-  ratchets: [
-    "3-60", "4-60", "5-60", "3-80", "4-80", "5-80", "9-60", "9-80",
-  ],
+  ratchets: ["3-60", "4-60", "5-60", "3-80", "4-80", "5-80", "9-60", "9-80"],
   bits: [
-    "Flat", "Ball", "Point", "Needle", "Accel", "Rush", "High Needle", "Low Flat",
-    "Gear Point", "Gear Flat", "Taper", "Orb",
+    "Flat",
+    "Ball",
+    "Point",
+    "Needle",
+    "Accel",
+    "Rush",
+    "High Needle",
+    "Low Flat",
+    "Gear Point",
+    "Gear Flat",
+    "Taper",
+    "Orb",
   ],
   types: [
     { name: "Attaque", emoji: "⚔️", color: 0xef4444 },
@@ -39,7 +55,9 @@ export class RandomBeyCommand extends Command {
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const blade = this.random(parts.blades);
     const ratchet = this.random(parts.ratchets);
     const bit = this.random(parts.bits);
@@ -69,9 +87,21 @@ export class RandomBeyCommand extends Command {
         { name: `${type.emoji} Type`, value: type.name, inline: true },
         { name: "⚖️ Poids", value: `${weight}g`, inline: true },
         { name: "\u200B", value: "\u200B", inline: true },
-        { name: "⚔️ Attaque", value: `${statsBar(attack)} ${attack}`, inline: false },
-        { name: "🛡️ Défense", value: `${statsBar(defense)} ${defense}`, inline: false },
-        { name: "🌀 Endurance", value: `${statsBar(stamina)} ${stamina}`, inline: false },
+        {
+          name: "⚔️ Attaque",
+          value: `${statsBar(attack)} ${attack}`,
+          inline: false,
+        },
+        {
+          name: "🛡️ Défense",
+          value: `${statsBar(defense)} ${defense}`,
+          inline: false,
+        },
+        {
+          name: "🌀 Endurance",
+          value: `${statsBar(stamina)} ${stamina}`,
+          inline: false,
+        },
       )
       .setFooter({ text: `${RPB.FullName} | Let it rip!` })
       .setTimestamp();

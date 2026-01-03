@@ -1,7 +1,9 @@
 import { Listener } from "@sapphire/framework";
-import { Events, GuildMember, EmbedBuilder } from "discord.js";
+import { EmbedBuilder, Events, GuildMember } from "discord.js";
 
-export class MemberLeaveListener extends Listener<typeof Events.GuildMemberRemove> {
+export class MemberLeaveListener extends Listener<
+  typeof Events.GuildMemberRemove
+> {
   constructor(context: Listener.LoaderContext, options: Listener.Options) {
     super(context, {
       ...options,
@@ -10,7 +12,9 @@ export class MemberLeaveListener extends Listener<typeof Events.GuildMemberRemov
   }
 
   override async run(member: GuildMember) {
-    this.container.logger.info(`Member left: ${member.user.tag} from ${member.guild.name}`);
+    this.container.logger.info(
+      `Member left: ${member.user.tag} from ${member.guild.name}`,
+    );
 
     // Find log channel (customize this logic as needed)
     const logChannel = member.guild.channels.cache.find(
@@ -26,7 +30,13 @@ export class MemberLeaveListener extends Listener<typeof Events.GuildMemberRemov
       .addFields(
         { name: "Member", value: member.user.tag, inline: true },
         { name: "ID", value: member.id, inline: true },
-        { name: "Joined", value: member.joinedAt ? `<t:${Math.floor(member.joinedAt.getTime() / 1000)}:R>` : "Unknown", inline: true },
+        {
+          name: "Joined",
+          value: member.joinedAt
+            ? `<t:${Math.floor(member.joinedAt.getTime() / 1000)}:R>`
+            : "Unknown",
+          inline: true,
+        },
       )
       .setTimestamp();
 

@@ -1,12 +1,17 @@
 import { Command } from "@sapphire/framework";
-import { EmbedBuilder, User } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { Colors, RPB } from "../../lib/constants.js";
 
 const battleResults = [
   { result: "burst", message: "💥 **BURST FINISH !**", points: 2, emoji: "💥" },
   { result: "over", message: "🔄 **OVER FINISH !**", points: 1, emoji: "🔄" },
   { result: "spin", message: "🌀 **SPIN FINISH !**", points: 1, emoji: "🌀" },
-  { result: "xtreme", message: "⚡ **X-TREME FINISH !**", points: 3, emoji: "⚡" },
+  {
+    result: "xtreme",
+    message: "⚡ **X-TREME FINISH !**",
+    points: 3,
+    emoji: "⚡",
+  },
 ];
 
 export class BattleCommand extends Command {
@@ -21,7 +26,9 @@ export class BattleCommand extends Command {
     registry.registerChatInputCommand((builder) =>
       builder
         .setName("battle")
-        .setDescription("Lance un combat Beyblade virtuel contre un autre membre !")
+        .setDescription(
+          "Lance un combat Beyblade virtuel contre un autre membre !",
+        )
         .addUserOption((opt) =>
           opt
             .setName("adversaire")
@@ -31,7 +38,9 @@ export class BattleCommand extends Command {
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const opponent = interaction.options.getUser("adversaire", true);
     const challenger = interaction.user;
 
@@ -54,7 +63,7 @@ export class BattleCommand extends Command {
       .setTitle("⚔️ Combat Beyblade !")
       .setDescription(
         `**${challenger.displayName}** VS **${opponent.displayName}**\n\n` +
-        "🌀 3... 2... 1... **LET IT RIP !**"
+          "🌀 3... 2... 1... **LET IT RIP !**",
       )
       .setColor(Colors.Secondary)
       .setFooter({ text: RPB.FullName });
@@ -67,21 +76,26 @@ export class BattleCommand extends Command {
     // Determine winner
     const winner = Math.random() > 0.5 ? challenger : opponent;
     const loser = winner.id === challenger.id ? opponent : challenger;
-    const finishType = battleResults[Math.floor(Math.random() * battleResults.length)];
+    const finishType =
+      battleResults[Math.floor(Math.random() * battleResults.length)];
 
     const resultEmbed = new EmbedBuilder()
       .setTitle(`${finishType.emoji} ${finishType.message}`)
       .setDescription(
         `**${winner.displayName}** remporte le combat !\n\n` +
-        `🏆 Victoire contre **${loser.displayName}**\n` +
-        `📊 Points gagnés: **${finishType.points}**`
+          `🏆 Victoire contre **${loser.displayName}**\n` +
+          `📊 Points gagnés: **${finishType.points}**`,
       )
       .setColor(Colors.Primary)
       .setThumbnail(winner.displayAvatarURL({ size: 128 }))
       .addFields(
         { name: "🥇 Vainqueur", value: winner.tag, inline: true },
         { name: "💔 Perdant", value: loser.tag, inline: true },
-        { name: "🎯 Type de finish", value: finishType.result.toUpperCase(), inline: true },
+        {
+          name: "🎯 Type de finish",
+          value: finishType.result.toUpperCase(),
+          inline: true,
+        },
       )
       .setFooter({ text: `${RPB.FullName} | GG !` })
       .setTimestamp();

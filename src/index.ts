@@ -1,9 +1,9 @@
-import "dotenv/config";
 import { container, SapphireClient } from "@sapphire/framework";
 import "@sapphire/plugin-logger/register";
-import "@sapphire/plugin-subcommands/register";
 import "@sapphire/plugin-scheduled-tasks/register";
+import "@sapphire/plugin-subcommands/register";
 import { GatewayIntentBits, Partials } from "discord.js";
+import "dotenv/config";
 
 try {
   const client = new SapphireClient({

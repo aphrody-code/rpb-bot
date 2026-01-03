@@ -26,18 +26,25 @@ export class ClearCommand extends Command {
             .setMaxValue(100),
         )
         .addUserOption((opt) =>
-          opt.setName("user").setDescription("Only delete messages from this user"),
+          opt
+            .setName("user")
+            .setDescription("Only delete messages from this user"),
         ),
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const amount = interaction.options.getInteger("amount", true);
     const targetUser = interaction.options.getUser("user");
     const channel = interaction.channel as TextChannel;
 
     if (!channel || !("bulkDelete" in channel)) {
-      return interaction.reply({ content: "❌ Cannot delete messages in this channel.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ Cannot delete messages in this channel.",
+        ephemeral: true,
+      });
     }
 
     await interaction.deferReply({ ephemeral: true });
@@ -59,19 +66,29 @@ export class ClearCommand extends Command {
         .setTitle("🧹 Messages Cleared")
         .setColor(0x00ff00)
         .addFields(
-          { name: "Deleted", value: `${deleted.size} message(s)`, inline: true },
+          {
+            name: "Deleted",
+            value: `${deleted.size} message(s)`,
+            inline: true,
+          },
           { name: "Moderator", value: interaction.user.tag, inline: true },
         )
         .setTimestamp();
 
       if (targetUser) {
-        embed.addFields({ name: "From User", value: targetUser.tag, inline: true });
+        embed.addFields({
+          name: "From User",
+          value: targetUser.tag,
+          inline: true,
+        });
       }
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Clear command error:", error);
-      return interaction.editReply({ content: "❌ Failed to delete messages." });
+      return interaction.editReply({
+        content: "❌ Failed to delete messages.",
+      });
     }
   }
 }

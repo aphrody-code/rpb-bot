@@ -36,14 +36,20 @@ export class BanCommand extends Command {
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const target = interaction.options.getUser("member", true);
-    const reason = interaction.options.getString("reason") ?? "No reason provided";
+    const reason =
+      interaction.options.getString("reason") ?? "No reason provided";
     const deleteDays = interaction.options.getInteger("delete_days") ?? 0;
     const member = interaction.guild?.members.cache.get(target.id);
 
     if (member && !member.bannable) {
-      return interaction.reply({ content: "❌ I cannot ban this member.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ I cannot ban this member.",
+        ephemeral: true,
+      });
     }
 
     try {
@@ -56,10 +62,18 @@ export class BanCommand extends Command {
         .setTitle("🔨 Member Banned")
         .setColor(0xff0000)
         .addFields(
-          { name: "Member", value: `${target.tag} (${target.id})`, inline: true },
-          { name: "Moderator", value: `${interaction.user.tag}`, inline: true },
+          {
+            name: "Member",
+            value: `${target.tag} (${target.id})`,
+            inline: true,
+          },
+          { name: "Moderator", value: interaction.user.tag, inline: true },
           { name: "Reason", value: reason },
-          { name: "Messages Deleted", value: `${deleteDays} day(s)`, inline: true },
+          {
+            name: "Messages Deleted",
+            value: `${deleteDays} day(s)`,
+            inline: true,
+          },
         )
         .setThumbnail(target.displayAvatarURL())
         .setTimestamp();
@@ -67,7 +81,10 @@ export class BanCommand extends Command {
       return interaction.reply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Ban command error:", error);
-      return interaction.reply({ content: "❌ Failed to ban member.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ Failed to ban member.",
+        ephemeral: true,
+      });
     }
   }
 }

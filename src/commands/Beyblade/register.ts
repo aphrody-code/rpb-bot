@@ -1,16 +1,14 @@
 import { Command } from "@sapphire/framework";
 import {
-  EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
+  EmbedBuilder,
 } from "discord.js";
-import { Colors, RPB } from "../../lib/constants.js";
 import { getChallongeClient } from "../../lib/challonge.js";
+import { Colors, RPB } from "../../lib/constants.js";
+import prisma from "../../lib/prisma.js";
 
 export class RegisterCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -38,7 +36,9 @@ export class RegisterCommand extends Command {
             .addStringOption((opt) =>
               opt
                 .setName("pseudo")
-                .setDescription("Ton pseudo de joueur (si différent de Discord)"),
+                .setDescription(
+                  "Ton pseudo de joueur (si différent de Discord)",
+                ),
             ),
         )
         .addSubcommand((sub) =>
@@ -66,7 +66,9 @@ export class RegisterCommand extends Command {
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const subcommand = interaction.options.getSubcommand();
 
     switch (subcommand) {
@@ -77,11 +79,16 @@ export class RegisterCommand extends Command {
       case "statut":
         return this.checkStatus(interaction);
       default:
-        return interaction.reply({ content: "❌ Sous-commande inconnue.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ Sous-commande inconnue.",
+          ephemeral: true,
+        });
     }
   }
 
-  private async joinTournament(interaction: Command.ChatInputCommandInteraction) {
+  private async joinTournament(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const tournamentId = interaction.options.getString("tournoi", true);
     const customName = interaction.options.getString("pseudo");
     const playerName = customName ?? interaction.user.displayName;
@@ -115,18 +122,63 @@ export class RegisterCommand extends Command {
         });
       }
 
-      // Register the participant
+      // Register the participant on Challonge
       await challonge.createParticipant(tournamentId, {
         name: playerName,
         misc: interaction.user.id, // Store Discord ID for reference
       });
 
+      // Sync to database (if available)
+      try {
+        // Get or create profile
+        const profile = await prisma.profile.upsert({
+          where: { discordId: interaction.user.id },
+          update: { bladerName: playerName },
+          create: {
+            discordId: interaction.user.id,
+            bladerName: playerName,
+          },
+        });
+
+        // Get or create tournament in DB
+        const dbTournament = await prisma.tournament.upsert({
+          where: { challongeId: tournamentId },
+          update: {},
+          create: {
+            challongeId: tournamentId,
+            name: tournament.attributes.name,
+            date: tournament.attributes.startAt
+              ? new Date(tournament.attributes.startAt)
+              : new Date(),
+            status: "UPCOMING",
+          },
+        });
+
+        // Register participant in DB
+        await prisma.tournamentParticipant.upsert({
+          where: {
+            tournamentId_profileId: {
+              tournamentId: dbTournament.id,
+              profileId: profile.id,
+            },
+          },
+          update: {},
+          create: {
+            tournamentId: dbTournament.id,
+            profileId: profile.id,
+          },
+        });
+      } catch (dbError) {
+        // Database sync is optional, log but don't fail
+        this.container.logger.warn("DB sync failed:", dbError);
+      }
+
       const embed = new EmbedBuilder()
         .setTitle("✅ Inscription confirmée !")
         .setDescription(
           `Tu es maintenant inscrit(e) à **${tournament.attributes.name}** !\n\n` +
-          `**Pseudo:** ${playerName}\n` +
-          `**Discord:** ${interaction.user.tag}`
+            `**Pseudo:** ${playerName}\n` +
+            `**Discord:** ${interaction.user.tag}`,
         )
         .setColor(Colors.Success)
         .addFields(
@@ -157,11 +209,15 @@ export class RegisterCommand extends Command {
       return interaction.editReply({ embeds: [embed], components: [row] });
     } catch (error) {
       this.container.logger.error("Join tournament error:", error);
-      return interaction.editReply("❌ Erreur lors de l'inscription. Le tournoi existe-t-il ?");
+      return interaction.editReply(
+        "❌ Erreur lors de l'inscription. Le tournoi existe-t-il ?",
+      );
     }
   }
 
-  private async leaveTournament(interaction: Command.ChatInputCommandInteraction) {
+  private async leaveTournament(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const tournamentId = interaction.options.getString("tournoi", true);
 
     await interaction.deferReply({ ephemeral: true });
@@ -175,7 +231,8 @@ export class RegisterCommand extends Command {
 
       if (tournament.attributes.state !== "pending") {
         return interaction.editReply({
-          content: "❌ Le tournoi a déjà commencé, tu ne peux plus te désinscrire.",
+          content:
+            "❌ Le tournoi a déjà commencé, tu ne peux plus te désinscrire.",
         });
       }
 
@@ -196,7 +253,7 @@ export class RegisterCommand extends Command {
         .setTitle("⚠️ Confirmation")
         .setDescription(
           `Es-tu sûr(e) de vouloir te désinscrire de **${tournament.attributes.name}** ?\n\n` +
-          `Pseudo: **${participant.attributes.name}**`
+            `Pseudo: **${participant.attributes.name}**`,
         )
         .setColor(Colors.Warning);
 
@@ -230,7 +287,9 @@ export class RegisterCommand extends Command {
 
           const successEmbed = new EmbedBuilder()
             .setTitle("✅ Désinscription confirmée")
-            .setDescription(`Tu as été retiré(e) de **${tournament.attributes.name}**.`)
+            .setDescription(
+              `Tu as été retiré(e) de **${tournament.attributes.name}**.`,
+            )
             .setColor(Colors.Success)
             .setTimestamp();
 
@@ -277,7 +336,9 @@ export class RegisterCommand extends Command {
       if (!participant) {
         const embed = new EmbedBuilder()
           .setTitle("📋 Statut d'inscription")
-          .setDescription(`Tu n'es **pas inscrit(e)** à **${tournament.attributes.name}**.`)
+          .setDescription(
+            `Tu n'es **pas inscrit(e)** à **${tournament.attributes.name}**.`,
+          )
           .setColor(Colors.Warning)
           .setTimestamp();
 
@@ -295,12 +356,26 @@ export class RegisterCommand extends Command {
       const stateEmoji = participant.attributes.checkedIn ? "✅" : "⏳";
       const embed = new EmbedBuilder()
         .setTitle("📋 Statut d'inscription")
-        .setDescription(`Tu es **inscrit(e)** à **${tournament.attributes.name}** !`)
+        .setDescription(
+          `Tu es **inscrit(e)** à **${tournament.attributes.name}** !`,
+        )
         .setColor(Colors.Success)
         .addFields(
-          { name: "🏷️ Pseudo", value: participant.attributes.name, inline: true },
-          { name: "🌱 Seed", value: `#${participant.attributes.seed}`, inline: true },
-          { name: `${stateEmoji} Check-in`, value: participant.attributes.checkedIn ? "Fait" : "En attente", inline: true },
+          {
+            name: "🏷️ Pseudo",
+            value: participant.attributes.name,
+            inline: true,
+          },
+          {
+            name: "🌱 Seed",
+            value: `#${participant.attributes.seed}`,
+            inline: true,
+          },
+          {
+            name: `${stateEmoji} Check-in`,
+            value: participant.attributes.checkedIn ? "Fait" : "En attente",
+            inline: true,
+          },
         )
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
@@ -308,7 +383,9 @@ export class RegisterCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Check status error:", error);
-      return interaction.editReply("❌ Erreur lors de la vérification du statut.");
+      return interaction.editReply(
+        "❌ Erreur lors de la vérification du statut.",
+      );
     }
   }
 }

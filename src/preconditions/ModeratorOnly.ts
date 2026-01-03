@@ -4,13 +4,19 @@ import { PermissionFlagsBits } from "discord.js";
 
 export class ModeratorOnlyPrecondition extends Precondition {
   public override async messageRun(message: Message) {
-    if (!message.member) return this.error({ message: "This command can only be used in a server." });
+    if (!message.member)
+      return this.error({
+        message: "This command can only be used in a server.",
+      });
     return this.checkModerator(message.member);
   }
 
   public override async chatInputRun(interaction: CommandInteraction) {
     const member = interaction.member as GuildMember;
-    if (!member) return this.error({ message: "This command can only be used in a server." });
+    if (!member)
+      return this.error({
+        message: "This command can only be used in a server.",
+      });
     return this.checkModerator(member);
   }
 

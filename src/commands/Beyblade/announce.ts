@@ -1,7 +1,13 @@
 import { Command } from "@sapphire/framework";
-import { EmbedBuilder, PermissionFlagsBits, ChannelType, TextChannel, NewsChannel } from "discord.js";
-import { Colors, RPB } from "../../lib/constants.js";
+import {
+  ChannelType,
+  EmbedBuilder,
+  NewsChannel,
+  PermissionFlagsBits,
+  TextChannel,
+} from "discord.js";
 import { getChallongeClient } from "../../lib/challonge.js";
+import { Colors, RPB } from "../../lib/constants.js";
 
 export class AnnounceCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -32,7 +38,10 @@ export class AnnounceCommand extends Command {
               opt
                 .setName("salon")
                 .setDescription("Salon où envoyer l'annonce")
-                .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
+                .addChannelTypes(
+                  ChannelType.GuildText,
+                  ChannelType.GuildAnnouncement,
+                ),
             )
             .addRoleOption((opt) =>
               opt.setName("mention").setDescription("Rôle à mentionner"),
@@ -57,7 +66,10 @@ export class AnnounceCommand extends Command {
               opt
                 .setName("salon")
                 .setDescription("Salon où envoyer le rappel")
-                .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
+                .addChannelTypes(
+                  ChannelType.GuildText,
+                  ChannelType.GuildAnnouncement,
+                ),
             ),
         )
         .addSubcommand((sub) =>
@@ -74,7 +86,10 @@ export class AnnounceCommand extends Command {
               opt
                 .setName("salon")
                 .setDescription("Salon où envoyer les résultats")
-                .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
+                .addChannelTypes(
+                  ChannelType.GuildText,
+                  ChannelType.GuildAnnouncement,
+                ),
             ),
         )
         .addSubcommand((sub) =>
@@ -82,16 +97,25 @@ export class AnnounceCommand extends Command {
             .setName("custom")
             .setDescription("Envoie une annonce personnalisée")
             .addStringOption((opt) =>
-              opt.setName("titre").setDescription("Titre de l'annonce").setRequired(true),
+              opt
+                .setName("titre")
+                .setDescription("Titre de l'annonce")
+                .setRequired(true),
             )
             .addStringOption((opt) =>
-              opt.setName("message").setDescription("Contenu de l'annonce").setRequired(true),
+              opt
+                .setName("message")
+                .setDescription("Contenu de l'annonce")
+                .setRequired(true),
             )
             .addChannelOption((opt) =>
               opt
                 .setName("salon")
                 .setDescription("Salon où envoyer l'annonce")
-                .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
+                .addChannelTypes(
+                  ChannelType.GuildText,
+                  ChannelType.GuildAnnouncement,
+                ),
             )
             .addRoleOption((opt) =>
               opt.setName("mention").setDescription("Rôle à mentionner"),
@@ -122,7 +146,9 @@ export class AnnounceCommand extends Command {
             .addStringOption((opt) =>
               opt
                 .setName("date")
-                .setDescription("Date du tournoi (ex: Dimanche 15 février 2026)")
+                .setDescription(
+                  "Date du tournoi (ex: Dimanche 15 février 2026)",
+                )
                 .setRequired(true),
             )
             .addStringOption((opt) =>
@@ -148,9 +174,18 @@ export class AnnounceCommand extends Command {
                 .setName("format")
                 .setDescription("Format du tournoi")
                 .addChoices(
-                  { name: "3on3 Double Élimination", value: "3on3 classique en Double Élimination" },
-                  { name: "3on3 Simple Élimination", value: "3on3 en Simple Élimination" },
-                  { name: "1on1 Double Élimination", value: "1on1 en Double Élimination" },
+                  {
+                    name: "3on3 Double Élimination",
+                    value: "3on3 classique en Double Élimination",
+                  },
+                  {
+                    name: "3on3 Simple Élimination",
+                    value: "3on3 en Simple Élimination",
+                  },
+                  {
+                    name: "1on1 Double Élimination",
+                    value: "1on1 en Double Élimination",
+                  },
                   { name: "Round Robin", value: "Round Robin" },
                 ),
             )
@@ -175,7 +210,10 @@ export class AnnounceCommand extends Command {
               opt
                 .setName("salon")
                 .setDescription("Salon où envoyer")
-                .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
+                .addChannelTypes(
+                  ChannelType.GuildText,
+                  ChannelType.GuildAnnouncement,
+                ),
             )
             .addBooleanOption((opt) =>
               opt
@@ -186,7 +224,9 @@ export class AnnounceCommand extends Command {
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const subcommand = interaction.options.getSubcommand();
 
     switch (subcommand) {
@@ -201,13 +241,19 @@ export class AnnounceCommand extends Command {
       case "générer":
         return this.generateAnnouncement(interaction);
       default:
-        return interaction.reply({ content: "❌ Sous-commande inconnue.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ Sous-commande inconnue.",
+          ephemeral: true,
+        });
     }
   }
 
-  private async announceTournament(interaction: Command.ChatInputCommandInteraction) {
+  private async announceTournament(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const tournamentId = interaction.options.getString("id", true);
-    const channel = (interaction.options.getChannel("salon") ?? interaction.channel) as TextChannel | NewsChannel;
+    const channel = (interaction.options.getChannel("salon") ??
+      interaction.channel) as TextChannel | NewsChannel;
     const mentionRole = interaction.options.getRole("mention");
 
     await interaction.deferReply({ ephemeral: true });
@@ -220,19 +266,32 @@ export class AnnounceCommand extends Command {
       ]);
 
       const t = tournamentRes.data;
-      const participantCount = participantsRes.data?.length ?? t.attributes.participantsCount;
+      const participantCount =
+        participantsRes.data?.length ?? t.attributes.participantsCount;
 
       const embed = new EmbedBuilder()
         .setTitle(`🏆 ${t.attributes.name}`)
         .setDescription(
           `${t.attributes.description ?? "Un nouveau tournoi Beyblade vous attend !"}\n\n` +
-          `**🌀 Let it rip !**`
+            `**🌀 Let it rip !**`,
         )
         .setColor(Colors.Primary)
         .addFields(
-          { name: "🎮 Jeu", value: t.attributes.gameName ?? "Beyblade X", inline: true },
-          { name: "🏷️ Format", value: this.formatTournamentType(t.attributes.tournamentType), inline: true },
-          { name: "👥 Inscrits", value: `${participantCount} joueur(s)`, inline: true },
+          {
+            name: "🎮 Jeu",
+            value: t.attributes.gameName ?? "Beyblade X",
+            inline: true,
+          },
+          {
+            name: "🏷️ Format",
+            value: this.formatTournamentType(t.attributes.tournamentType),
+            inline: true,
+          },
+          {
+            name: "👥 Inscrits",
+            value: `${participantCount} joueur(s)`,
+            inline: true,
+          },
         )
         .setFooter({ text: `${RPB.FullName} | ID: ${tournamentId}` })
         .setTimestamp();
@@ -272,14 +331,17 @@ export class AnnounceCommand extends Command {
       return interaction.editReply(`✅ Annonce envoyée dans ${channel} !`);
     } catch (error) {
       this.container.logger.error("Announce tournament error:", error);
-      return interaction.editReply("❌ Erreur lors de la récupération du tournoi.");
+      return interaction.editReply(
+        "❌ Erreur lors de la récupération du tournoi.",
+      );
     }
   }
 
   private async sendReminder(interaction: Command.ChatInputCommandInteraction) {
     const tournamentId = interaction.options.getString("id", true);
     const customMessage = interaction.options.getString("message");
-    const channel = (interaction.options.getChannel("salon") ?? interaction.channel) as TextChannel | NewsChannel;
+    const channel = (interaction.options.getChannel("salon") ??
+      interaction.channel) as TextChannel | NewsChannel;
 
     await interaction.deferReply({ ephemeral: true });
 
@@ -291,15 +353,23 @@ export class AnnounceCommand extends Command {
       const embed = new EmbedBuilder()
         .setTitle(`⏰ Rappel : ${t.attributes.name}`)
         .setDescription(
-          customMessage ?? 
-          `**Le tournoi commence bientôt !**\n\n` +
-          `N'oubliez pas de vous inscrire si ce n'est pas déjà fait.\n` +
-          `Préparez vos combos et soyez prêts à donner le meilleur de vous-même !`
+          customMessage ??
+            `**Le tournoi commence bientôt !**\n\n` +
+              `N'oubliez pas de vous inscrire si ce n'est pas déjà fait.\n` +
+              `Préparez vos combos et soyez prêts à donner le meilleur de vous-même !`,
         )
         .setColor(Colors.Warning)
         .addFields(
-          { name: "👥 Inscrits", value: `${t.attributes.participantsCount} joueur(s)`, inline: true },
-          { name: "📊 État", value: this.formatState(t.attributes.state), inline: true },
+          {
+            name: "👥 Inscrits",
+            value: `${t.attributes.participantsCount} joueur(s)`,
+            inline: true,
+          },
+          {
+            name: "📊 État",
+            value: this.formatState(t.attributes.state),
+            inline: true,
+          },
         )
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
@@ -328,9 +398,12 @@ export class AnnounceCommand extends Command {
     }
   }
 
-  private async announceResults(interaction: Command.ChatInputCommandInteraction) {
+  private async announceResults(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const tournamentId = interaction.options.getString("id", true);
-    const channel = (interaction.options.getChannel("salon") ?? interaction.channel) as TextChannel | NewsChannel;
+    const channel = (interaction.options.getChannel("salon") ??
+      interaction.channel) as TextChannel | NewsChannel;
 
     await interaction.deferReply({ ephemeral: true });
 
@@ -358,17 +431,30 @@ export class AnnounceCommand extends Command {
 
       const embed = new EmbedBuilder()
         .setTitle(`🏆 Résultats : ${t.attributes.name}`)
-        .setDescription(`Le tournoi est terminé ! Voici les résultats :\n\n${podiumText}`)
+        .setDescription(
+          `Le tournoi est terminé ! Voici les résultats :\n\n${podiumText}`,
+        )
         .setColor(Colors.Secondary)
         .addFields(
-          { name: "👥 Participants", value: `${participants.length}`, inline: true },
-          { name: "🏷️ Format", value: this.formatTournamentType(t.attributes.tournamentType), inline: true },
+          {
+            name: "👥 Participants",
+            value: `${participants.length}`,
+            inline: true,
+          },
+          {
+            name: "🏷️ Format",
+            value: this.formatTournamentType(t.attributes.tournamentType),
+            inline: true,
+          },
         )
         .setFooter({ text: `${RPB.FullName} | GG à tous !` })
         .setTimestamp();
 
       if (ranked.length > 3) {
-        const top8 = ranked.slice(3, 8).map((p, i) => `${i + 4}. ${p.attributes.name}`).join("\n");
+        const top8 = ranked
+          .slice(3, 8)
+          .map((p, i) => `${i + 4}. ${p.attributes.name}`)
+          .join("\n");
         embed.addFields({ name: "📊 Top 8", value: top8, inline: false });
       }
 
@@ -383,14 +469,17 @@ export class AnnounceCommand extends Command {
       return interaction.editReply(`✅ Résultats envoyés dans ${channel} !`);
     } catch (error) {
       this.container.logger.error("Announce results error:", error);
-      return interaction.editReply("❌ Erreur lors de l'annonce des résultats.");
+      return interaction.editReply(
+        "❌ Erreur lors de l'annonce des résultats.",
+      );
     }
   }
 
   private async sendCustom(interaction: Command.ChatInputCommandInteraction) {
     const title = interaction.options.getString("titre", true);
     const message = interaction.options.getString("message", true);
-    const channel = (interaction.options.getChannel("salon") ?? interaction.channel) as TextChannel | NewsChannel;
+    const channel = (interaction.options.getChannel("salon") ??
+      interaction.channel) as TextChannel | NewsChannel;
     const mentionRole = interaction.options.getRole("mention");
     const colorHex = interaction.options.getString("couleur") ?? "dc2626";
 
@@ -418,29 +507,38 @@ export class AnnounceCommand extends Command {
       }
     }
 
-    return interaction.reply({ content: `✅ Annonce envoyée dans ${channel} !`, ephemeral: true });
+    return interaction.reply({
+      content: `✅ Annonce envoyée dans ${channel} !`,
+      ephemeral: true,
+    });
   }
 
-  private async generateAnnouncement(interaction: Command.ChatInputCommandInteraction) {
+  private async generateAnnouncement(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const nom = interaction.options.getString("nom", true);
     const date = interaction.options.getString("date", true);
     const heure = interaction.options.getString("heure", true);
     const lieu = interaction.options.getString("lieu", true);
     const challonge = interaction.options.getString("challonge", true);
-    const format = interaction.options.getString("format") ?? "3on3 classique en Double Élimination";
+    const format =
+      interaction.options.getString("format") ??
+      "3on3 classique en Double Élimination";
     const places = interaction.options.getInteger("places") ?? 64;
     const checkin = interaction.options.getString("checkin");
     const customIntro = interaction.options.getString("intro");
-    const channel = (interaction.options.getChannel("salon") ?? interaction.channel) as TextChannel | NewsChannel;
+    const channel = (interaction.options.getChannel("salon") ??
+      interaction.channel) as TextChannel | NewsChannel;
     const preview = interaction.options.getBoolean("preview") ?? true;
 
     // Générer le lien Challonge complet
-    const challongeUrl = challonge.startsWith("http") 
-      ? challonge 
+    const challongeUrl = challonge.startsWith("http")
+      ? challonge
       : `https://challonge.com/${challonge}`;
 
     // Intro narrative style RPB
-    const defaultIntro = `La **${RPB.FullName}** continue d'écrire son histoire ! ` +
+    const defaultIntro =
+      `La **${RPB.FullName}** continue d'écrire son histoire ! ` +
       `Après des mois d'attente et de préparation, nous sommes fiers de vous annoncer ` +
       `le prochain chapitre de notre saga...`;
 
@@ -482,8 +580,8 @@ export class AnnounceCommand extends Command {
       .setTitle(`📋 Aperçu : ${nom}`)
       .setDescription(
         `**Mode :** ${preview ? "Aperçu (non envoyé)" : "Envoi direct"}\n` +
-        `**Salon :** ${channel}\n` +
-        `**Caractères :** ${announcement.length}/2000`
+          `**Salon :** ${channel}\n` +
+          `**Caractères :** ${announcement.length}/2000`,
       )
       .setColor(Colors.Primary)
       .addFields(
@@ -492,7 +590,11 @@ export class AnnounceCommand extends Command {
         { name: "📍 Lieu", value: lieu, inline: true },
         { name: "🎮 Format", value: format, inline: true },
         { name: "👥 Places", value: `${places}`, inline: true },
-        { name: "🔗 Challonge", value: `[Lien](${challongeUrl})`, inline: true },
+        {
+          name: "🔗 Challonge",
+          value: `[Lien](${challongeUrl})`,
+          inline: true,
+        },
       )
       .setFooter({ text: RPB.FullName })
       .setTimestamp();
@@ -514,7 +616,10 @@ export class AnnounceCommand extends Command {
       const sentMessage = await channel.send({ content: announcement });
 
       // Publier si c'est un salon d'annonces
-      if (channel.type === ChannelType.GuildAnnouncement && sentMessage.crosspostable) {
+      if (
+        channel.type === ChannelType.GuildAnnouncement &&
+        sentMessage.crosspostable
+      ) {
         try {
           await sentMessage.crosspost();
         } catch {

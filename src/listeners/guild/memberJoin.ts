@@ -1,6 +1,6 @@
 import { Listener } from "@sapphire/framework";
-import { Events, GuildMember, EmbedBuilder } from "discord.js";
-import { RPB, Colors } from "../../lib/constants.js";
+import { EmbedBuilder, Events, GuildMember } from "discord.js";
+import { Colors, RPB } from "../../lib/constants.js";
 
 export class MemberJoinListener extends Listener<typeof Events.GuildMemberAdd> {
   constructor(context: Listener.LoaderContext, options: Listener.Options) {
@@ -11,7 +11,9 @@ export class MemberJoinListener extends Listener<typeof Events.GuildMemberAdd> {
   }
 
   override async run(member: GuildMember) {
-    this.container.logger.info(`Nouveau membre: ${member.user.tag} sur ${member.guild.name}`);
+    this.container.logger.info(
+      `Nouveau membre: ${member.user.tag} sur ${member.guild.name}`,
+    );
 
     // Find the "bienvenue" channel
     const welcomeChannel = member.guild.channels.cache.find(
@@ -23,19 +25,26 @@ export class MemberJoinListener extends Listener<typeof Events.GuildMemberAdd> {
     const embed = new EmbedBuilder()
       .setTitle("🌀 Bienvenue à la RPB !")
       .setDescription(
-        `Bienvenue ${member} dans la **${RPB.FullName}** !\n\n` +
-        `📜 Lis le <#règlement> pour connaître les règles\n` +
-        `🎭 Récupère tes rôles dans <#rôles>\n` +
-        `💬 Viens discuter dans <#chat-general>\n\n` +
-        `**Let it rip !** 🌀`
+        `Bienvenue ${member.toString()} dans la **${RPB.FullName}** !\n\n` +
+          `📜 Lis le <#règlement> pour connaître les règles\n` +
+          `🎭 Récupère tes rôles dans <#rôles>\n` +
+          `💬 Viens discuter dans <#chat-general>\n\n` +
+          `**Let it rip !** 🌀`,
       )
       .setColor(Colors.Primary)
       .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
       .addFields(
         { name: "👤 Membre", value: member.user.tag, inline: true },
-        { name: "🔢 Membre #", value: `${member.guild.memberCount}`, inline: true },
+        {
+          name: "🔢 Membre #",
+          value: `${member.guild.memberCount}`,
+          inline: true,
+        },
       )
-      .setFooter({ text: RPB.FullName, iconURL: member.guild.iconURL() ?? undefined })
+      .setFooter({
+        text: RPB.FullName,
+        iconURL: member.guild.iconURL() ?? undefined,
+      })
       .setTimestamp();
 
     try {

@@ -29,17 +29,26 @@ export class KickCommand extends Command {
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const target = interaction.options.getUser("member", true);
-    const reason = interaction.options.getString("reason") ?? "No reason provided";
+    const reason =
+      interaction.options.getString("reason") ?? "No reason provided";
     const member = interaction.guild?.members.cache.get(target.id);
 
     if (!member) {
-      return interaction.reply({ content: "❌ Member not found.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ Member not found.",
+        ephemeral: true,
+      });
     }
 
     if (!member.kickable) {
-      return interaction.reply({ content: "❌ I cannot kick this member.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ I cannot kick this member.",
+        ephemeral: true,
+      });
     }
 
     try {
@@ -49,8 +58,12 @@ export class KickCommand extends Command {
         .setTitle("👢 Member Kicked")
         .setColor(0xffa500)
         .addFields(
-          { name: "Member", value: `${target.tag} (${target.id})`, inline: true },
-          { name: "Moderator", value: `${interaction.user.tag}`, inline: true },
+          {
+            name: "Member",
+            value: `${target.tag} (${target.id})`,
+            inline: true,
+          },
+          { name: "Moderator", value: interaction.user.tag, inline: true },
           { name: "Reason", value: reason },
         )
         .setThumbnail(target.displayAvatarURL())
@@ -59,7 +72,10 @@ export class KickCommand extends Command {
       return interaction.reply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Kick command error:", error);
-      return interaction.reply({ content: "❌ Failed to kick member.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ Failed to kick member.",
+        ephemeral: true,
+      });
     }
   }
 }

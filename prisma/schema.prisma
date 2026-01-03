@@ -1,0 +1,192 @@
+// RPB Dashboard - Prisma Schema
+// République Populaire du Beyblade
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// BETTER AUTH - Authentication Models
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Discord OAuth
+  discordId     String?   @unique
+  discordTag    String?
+
+  // Relations
+  sessions      Session[]
+  accounts      Account[]
+
+  // RPB Relations
+  profile       Profile?
+  tournaments   TournamentParticipant[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verifications")
+}
+
+// ============================================================================
+// RPB - Profile & Beyblade Models
+// ============================================================================
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Beyblade info
+  bladerName    String?
+  favoriteType  BeybladeType?
+  experience    ExperienceLevel @default(BEGINNER)
+  bio           String?
+
+  // Stats
+  wins          Int @default(0)
+  losses        Int @default(0)
+  tournamentWins Int @default(0)
+
+  // Social
+  twitterHandle String?
+  tiktokHandle  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+enum BeybladeType {
+  ATTACK
+  DEFENSE
+  STAMINA
+  BALANCE
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  LEGEND
+}
+
+// ============================================================================
+// RPB - Tournament Models
+// ============================================================================
+
+model Tournament {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  date        DateTime
+  location    String?
+  format      String   @default("3on3 Double Elimination")
+  maxPlayers  Int      @default(64)
+  
+  // Challonge integration
+  challongeId   String?  @unique
+  challongeUrl  String?
+  
+  // Status
+  status      TournamentStatus @default(UPCOMING)
+  
+  // Relations
+  participants TournamentParticipant[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tournaments")
+}
+
+enum TournamentStatus {
+  UPCOMING
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  CHECKIN
+  UNDERWAY
+  COMPLETE
+  CANCELLED
+}
+
+model TournamentParticipant {
+  id           String     @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Challonge participant ID
+  challongeParticipantId String?
+  
+  // Status
+  checkedIn    Boolean  @default(false)
+  seed         Int?
+  finalRank    Int?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tournamentId, userId])
+  @@map("tournament_participants")
+}

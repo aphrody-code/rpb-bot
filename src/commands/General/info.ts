@@ -34,7 +34,9 @@ export class InfoCommand extends Command {
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const subcommand = interaction.options.getSubcommand();
 
     switch (subcommand) {
@@ -45,7 +47,10 @@ export class InfoCommand extends Command {
       case "membre":
         return this.userInfo(interaction);
       default:
-        return interaction.reply({ content: "❌ Sous-commande inconnue.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ Sous-commande inconnue.",
+          ephemeral: true,
+        });
     }
   }
 
@@ -58,13 +63,29 @@ export class InfoCommand extends Command {
       .setColor(Colors.Primary)
       .setThumbnail(client.user?.displayAvatarURL() ?? null)
       .addFields(
-        { name: "📊 Serveurs", value: `${client.guilds.cache.size}`, inline: true },
-        { name: "👥 Utilisateurs", value: `${client.users.cache.size}`, inline: true },
-        { name: "💬 Salons", value: `${client.channels.cache.size}`, inline: true },
+        {
+          name: "📊 Serveurs",
+          value: `${client.guilds.cache.size}`,
+          inline: true,
+        },
+        {
+          name: "👥 Utilisateurs",
+          value: `${client.users.cache.size}`,
+          inline: true,
+        },
+        {
+          name: "💬 Salons",
+          value: `${client.channels.cache.size}`,
+          inline: true,
+        },
         { name: "📦 Discord.js", value: `v${djsVersion}`, inline: true },
         { name: "⚡ Sapphire", value: `v${sapphireVersion}`, inline: true },
         { name: "🟢 Node.js", value: process.version, inline: true },
-        { name: "💾 Mémoire", value: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`, inline: true },
+        {
+          name: "💾 Mémoire",
+          value: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`,
+          inline: true,
+        },
       )
       .setFooter({ text: RPB.FullName })
       .setTimestamp();
@@ -75,7 +96,10 @@ export class InfoCommand extends Command {
   private async serverInfo(interaction: Command.ChatInputCommandInteraction) {
     const { guild } = interaction;
     if (!guild) {
-      return interaction.reply({ content: "❌ Cette commande ne peut être utilisée que sur un serveur.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ Cette commande ne peut être utilisée que sur un serveur.",
+        ephemeral: true,
+      });
     }
 
     const embed = new EmbedBuilder()
@@ -85,11 +109,27 @@ export class InfoCommand extends Command {
       .addFields(
         { name: "👑 Propriétaire", value: `<@${guild.ownerId}>`, inline: true },
         { name: "👥 Membres", value: `${guild.memberCount}`, inline: true },
-        { name: "💬 Salons", value: `${guild.channels.cache.size}`, inline: true },
+        {
+          name: "💬 Salons",
+          value: `${guild.channels.cache.size}`,
+          inline: true,
+        },
         { name: "🎭 Rôles", value: `${guild.roles.cache.size}`, inline: true },
-        { name: "😀 Emojis", value: `${guild.emojis.cache.size}`, inline: true },
-        { name: "🚀 Boosts", value: `Niveau ${guild.premiumTier}`, inline: true },
-        { name: "📅 Créé", value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`, inline: true },
+        {
+          name: "😀 Emojis",
+          value: `${guild.emojis.cache.size}`,
+          inline: true,
+        },
+        {
+          name: "🚀 Boosts",
+          value: `Niveau ${guild.premiumTier}`,
+          inline: true,
+        },
+        {
+          name: "📅 Créé",
+          value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`,
+          inline: true,
+        },
       )
       .setFooter({ text: `ID: ${guild.id}` })
       .setTimestamp();
@@ -109,13 +149,27 @@ export class InfoCommand extends Command {
         { name: "🏷️ Pseudo", value: target.username, inline: true },
         { name: "🆔 ID", value: target.id, inline: true },
         { name: "🤖 Bot", value: target.bot ? "Oui" : "Non", inline: true },
-        { name: "📅 Compte créé", value: `<t:${Math.floor(target.createdTimestamp / 1000)}:R>`, inline: true },
+        {
+          name: "📅 Compte créé",
+          value: `<t:${Math.floor(target.createdTimestamp / 1000)}:R>`,
+          inline: true,
+        },
       );
 
     if (member) {
       embed.addFields(
-        { name: "📥 A rejoint", value: member.joinedAt ? `<t:${Math.floor(member.joinedAt.getTime() / 1000)}:R>` : "Inconnu", inline: true },
-        { name: "🎭 Rôles", value: `${member.roles.cache.size - 1}`, inline: true },
+        {
+          name: "📥 A rejoint",
+          value: member.joinedAt
+            ? `<t:${Math.floor(member.joinedAt.getTime() / 1000)}:R>`
+            : "Inconnu",
+          inline: true,
+        },
+        {
+          name: "🎭 Rôles",
+          value: `${member.roles.cache.size - 1}`,
+          inline: true,
+        },
       );
     }
 

@@ -23,22 +23,40 @@ export function createEmbed(options: {
 /**
  * Create a success embed
  */
-export function successEmbed(title: string, description?: string): EmbedBuilder {
-  return createEmbed({ title: `✅ ${title}`, description, color: Colors.Success });
+export function successEmbed(
+  title: string,
+  description?: string,
+): EmbedBuilder {
+  return createEmbed({
+    title: `✅ ${title}`,
+    description,
+    color: Colors.Success,
+  });
 }
 
 /**
  * Create an error embed
  */
 export function errorEmbed(title: string, description?: string): EmbedBuilder {
-  return createEmbed({ title: `❌ ${title}`, description, color: Colors.Error });
+  return createEmbed({
+    title: `❌ ${title}`,
+    description,
+    color: Colors.Error,
+  });
 }
 
 /**
  * Create a warning embed
  */
-export function warningEmbed(title: string, description?: string): EmbedBuilder {
-  return createEmbed({ title: `⚠️ ${title}`, description, color: Colors.Warning });
+export function warningEmbed(
+  title: string,
+  description?: string,
+): EmbedBuilder {
+  return createEmbed({
+    title: `⚠️ ${title}`,
+    description,
+    color: Colors.Warning,
+  });
 }
 
 /**
@@ -64,7 +82,11 @@ export function parseDuration(input: string): number | null {
 /**
  * Truncate a string to a maximum length
  */
-export function truncate(str: string, maxLength: number, suffix = "..."): string {
+export function truncate(
+  str: string,
+  maxLength: number,
+  suffix = "...",
+): string {
   if (str.length <= maxLength) return str;
   return str.slice(0, maxLength - suffix.length) + suffix;
 }

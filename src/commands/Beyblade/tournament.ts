@@ -1,7 +1,13 @@
 import { Command } from "@sapphire/framework";
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  PermissionFlagsBits,
+} from "discord.js";
+import { getChallongeClient } from "../../lib/challonge.js";
 import { Colors, RPB } from "../../lib/constants.js";
-import { getChallongeClient, type Tournament } from "../../lib/challonge.js";
 
 export class TournamentCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -17,7 +23,9 @@ export class TournamentCommand extends Command {
         .setName("tournoi")
         .setDescription("Gestion des tournois Beyblade")
         .addSubcommand((sub) =>
-          sub.setName("liste").setDescription("Affiche la liste des tournois actifs"),
+          sub
+            .setName("liste")
+            .setDescription("Affiche la liste des tournois actifs"),
         )
         .addSubcommand((sub) =>
           sub
@@ -63,14 +71,19 @@ export class TournamentCommand extends Command {
             ),
         )
         .addSubcommand((sub) =>
-          sub.setName("règles").setDescription("Affiche les règles des tournois RPB"),
+          sub
+            .setName("règles")
+            .setDescription("Affiche les règles des tournois RPB"),
         )
         .addSubcommand((sub) =>
           sub
             .setName("créer")
             .setDescription("Créer un nouveau tournoi (Admin)")
             .addStringOption((opt) =>
-              opt.setName("nom").setDescription("Nom du tournoi").setRequired(true),
+              opt
+                .setName("nom")
+                .setDescription("Nom du tournoi")
+                .setRequired(true),
             )
             .addStringOption((opt) =>
               opt
@@ -84,13 +97,17 @@ export class TournamentCommand extends Command {
                 ),
             )
             .addStringOption((opt) =>
-              opt.setName("description").setDescription("Description du tournoi"),
+              opt
+                .setName("description")
+                .setDescription("Description du tournoi"),
             ),
         ),
     );
   }
 
-  override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const subcommand = interaction.options.getSubcommand();
 
     switch (subcommand) {
@@ -107,11 +124,16 @@ export class TournamentCommand extends Command {
       case "créer":
         return this.createTournament(interaction);
       default:
-        return interaction.reply({ content: "❌ Sous-commande inconnue.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ Sous-commande inconnue.",
+          ephemeral: true,
+        });
     }
   }
 
-  private async listTournaments(interaction: Command.ChatInputCommandInteraction) {
+  private async listTournaments(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     await interaction.deferReply();
 
     try {
@@ -143,11 +165,15 @@ export class TournamentCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Challonge API error:", error);
-      return interaction.editReply("❌ Erreur lors de la récupération des tournois. Vérifie la clé API.");
+      return interaction.editReply(
+        "❌ Erreur lors de la récupération des tournois. Vérifie la clé API.",
+      );
     }
   }
 
-  private async showTournament(interaction: Command.ChatInputCommandInteraction) {
+  private async showTournament(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const tournamentId = interaction.options.getString("id", true);
     await interaction.deferReply();
 
@@ -162,8 +188,16 @@ export class TournamentCommand extends Command {
         .setColor(Colors.Primary)
         .setDescription(t.attributes.description ?? "Pas de description")
         .addFields(
-          { name: "📊 Participants", value: `${t.attributes.participantsCount}`, inline: true },
-          { name: "🎮 Jeu", value: t.attributes.gameName ?? "Beyblade", inline: true },
+          {
+            name: "📊 Participants",
+            value: `${t.attributes.participantsCount}`,
+            inline: true,
+          },
+          {
+            name: "🎮 Jeu",
+            value: t.attributes.gameName ?? "Beyblade",
+            inline: true,
+          },
           { name: "🏷️ Type", value: t.attributes.tournamentType, inline: true },
           { name: "📅 État", value: t.attributes.state, inline: true },
         )
@@ -185,7 +219,9 @@ export class TournamentCommand extends Command {
     }
   }
 
-  private async listParticipants(interaction: Command.ChatInputCommandInteraction) {
+  private async listParticipants(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     const tournamentId = interaction.options.getString("id", true);
     await interaction.deferReply();
 
@@ -199,7 +235,10 @@ export class TournamentCommand extends Command {
 
       const participants = response.data
         .sort((a, b) => a.attributes.seed - b.attributes.seed)
-        .map((p, i) => `${i + 1}. **${p.attributes.name}** ${p.attributes.checkedIn ? "✅" : ""}`)
+        .map(
+          (p, i) =>
+            `${i + 1}. **${p.attributes.name}** ${p.attributes.checkedIn ? "✅" : ""}`,
+        )
         .join("\n");
 
       const embed = new EmbedBuilder()
@@ -216,13 +255,19 @@ export class TournamentCommand extends Command {
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Challonge API error:", error);
-      return interaction.editReply("❌ Erreur lors de la récupération des participants.");
+      return interaction.editReply(
+        "❌ Erreur lors de la récupération des participants.",
+      );
     }
   }
 
   private async listMatches(interaction: Command.ChatInputCommandInteraction) {
     const tournamentId = interaction.options.getString("id", true);
-    const state = interaction.options.getString("état") as "open" | "pending" | "complete" | null;
+    const state = interaction.options.getString("état") as
+      | "open"
+      | "pending"
+      | "complete"
+      | null;
     await interaction.deferReply();
 
     try {
@@ -254,19 +299,27 @@ export class TournamentCommand extends Command {
         .setTitle("⚔️ Matches")
         .setColor(Colors.Primary)
         .setDescription(matches.join("\n").slice(0, 4000))
-        .setFooter({ text: `${matchesRes.data.length} match(es) | ${RPB.FullName}` })
+        .setFooter({
+          text: `${matchesRes.data.length} match(es) | ${RPB.FullName}`,
+        })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Challonge API error:", error);
-      return interaction.editReply("❌ Erreur lors de la récupération des matches.");
+      return interaction.editReply(
+        "❌ Erreur lors de la récupération des matches.",
+      );
     }
   }
 
-  private async createTournament(interaction: Command.ChatInputCommandInteraction) {
+  private async createTournament(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
     // Check admin permissions
-    if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
+    if (
+      !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)
+    ) {
       return interaction.reply({
         content: "❌ Seuls les administrateurs peuvent créer des tournois.",
         ephemeral: true,
@@ -301,7 +354,11 @@ export class TournamentCommand extends Command {
         .setDescription(`**${t.attributes.name}** a été créé avec succès !`)
         .addFields(
           { name: "🏷️ Type", value: t.attributes.tournamentType, inline: true },
-          { name: "🔗 URL", value: `https://challonge.com/${t.attributes.url}`, inline: false },
+          {
+            name: "🔗 URL",
+            value: `https://challonge.com/${t.attributes.url}`,
+            inline: false,
+          },
         )
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
