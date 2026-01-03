@@ -6,8 +6,13 @@ import { GatewayIntentBits, Partials } from "discord.js";
 import "dotenv/config";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { startApiServer } from "./lib/api-server.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Start API server for dashboard integration
+const apiPort = parseInt(process.env.BOT_API_PORT ?? "3001", 10);
+startApiServer(apiPort);
 
 try {
   const client = new SapphireClient({

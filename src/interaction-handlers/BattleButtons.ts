@@ -124,7 +124,8 @@ export class BattleButtonHandler extends InteractionHandler {
     const winner = Math.random() > 0.5 ? challenger : interaction.user;
     const loser = winner.id === challenger.id ? interaction.user : challenger;
     const finishType =
-      battleResults[Math.floor(Math.random() * battleResults.length)];
+      battleResults[Math.floor(Math.random() * battleResults.length)] ??
+      battleResults[0]!;
 
     const resultEmbed = new EmbedBuilder()
       .setTitle(`${finishType.emoji} ${finishType.message}`)

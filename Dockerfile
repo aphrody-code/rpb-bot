@@ -8,4 +8,7 @@ WORKDIR /app
 COPY . .
 RUN pnpm install --prod
 
+# Expose API port for dashboard integration
+EXPOSE 3001
+
 ENTRYPOINT ["pnpm", "start"]

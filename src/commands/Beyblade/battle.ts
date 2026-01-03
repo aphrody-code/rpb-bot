@@ -161,7 +161,8 @@ export class BattleCommand extends Command {
     const winner = Math.random() > 0.5 ? challenger : opponent;
     const loser = winner.id === challenger.id ? opponent : challenger;
     const finishType =
-      battleResults[Math.floor(Math.random() * battleResults.length)];
+      battleResults[Math.floor(Math.random() * battleResults.length)] ??
+      battleResults[0]!;
 
     const resultEmbed = new EmbedBuilder()
       .setTitle(`${finishType.emoji} ${finishType.message}`)

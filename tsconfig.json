@@ -1,6 +1,30 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@tsconfig/node24",
   "compilerOptions": {
-    "noEmit": true
-  }
+    // Pas d'émission JS (tsx exécute directement le TS)
+    "noEmit": true,
+
+    // Sécurité renforcée
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+
+    // Performance
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo.json",
+
+    // Compatibilité tsx/runtime TS
+    "verbatimModuleSyntax": true,
+
+    // Alias de chemins
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@commands/*": ["./src/commands/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@listeners/*": ["./src/listeners/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "src/generated"]
 }

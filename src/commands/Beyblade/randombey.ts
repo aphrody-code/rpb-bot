@@ -109,8 +109,11 @@ export class RandomBeyCommand extends Command {
     return interaction.reply({ embeds: [embed] });
   }
 
-  private random<T>(array: T[]): T {
-    return array[Math.floor(Math.random() * array.length)];
+  private random<T>(array: readonly T[]): T {
+    const index = Math.floor(Math.random() * array.length);
+    const item = array[index];
+    if (item === undefined) throw new Error("Array is empty");
+    return item;
   }
 
   private randomStat(): number {
