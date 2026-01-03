@@ -130,12 +130,24 @@ export class RegisterCommand extends Command {
 
       // Sync to database (if available)
       try {
-        // Get or create profile
-        const profile = await prisma.profile.upsert({
+        // Get or create user first
+        const user = await prisma.user.upsert({
           where: { discordId: interaction.user.id },
-          update: { bladerName: playerName },
+          update: { discordTag: interaction.user.tag },
           create: {
             discordId: interaction.user.id,
+            discordTag: interaction.user.tag,
+            email: `${interaction.user.id}@discord.rpbey.fr`,
+            name: playerName,
+          },
+        });
+
+        // Get or create profile
+        await prisma.profile.upsert({
+          where: { userId: user.id },
+          update: { bladerName: playerName },
+          create: {
+            userId: user.id,
             bladerName: playerName,
           },
         });
@@ -157,15 +169,15 @@ export class RegisterCommand extends Command {
         // Register participant in DB
         await prisma.tournamentParticipant.upsert({
           where: {
-            tournamentId_profileId: {
+            tournamentId_userId: {
               tournamentId: dbTournament.id,
-              profileId: profile.id,
+              userId: user.id,
             },
           },
           update: {},
           create: {
             tournamentId: dbTournament.id,
-            profileId: profile.id,
+            userId: user.id,
           },
         });
       } catch (dbError) {

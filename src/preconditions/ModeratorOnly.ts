@@ -6,7 +6,7 @@ export class ModeratorOnlyPrecondition extends Precondition {
   public override async messageRun(message: Message) {
     if (!message.member)
       return this.error({
-        message: "This command can only be used in a server.",
+        message: "Cette commande ne peut être utilisée que sur un serveur.",
       });
     return this.checkModerator(message.member);
   }
@@ -15,7 +15,7 @@ export class ModeratorOnlyPrecondition extends Precondition {
     const member = interaction.member as GuildMember;
     if (!member)
       return this.error({
-        message: "This command can only be used in a server.",
+        message: "Cette commande ne peut être utilisée que sur un serveur.",
       });
     return this.checkModerator(member);
   }
@@ -29,7 +29,9 @@ export class ModeratorOnlyPrecondition extends Precondition {
 
     return hasModPermissions
       ? this.ok()
-      : this.error({ message: "Only moderators can use this command." });
+      : this.error({
+          message: "Seuls les modérateurs peuvent utiliser cette commande.",
+        });
   }
 }
 

@@ -15,7 +15,10 @@ export class OwnerOnlyPrecondition extends Precondition {
   private checkOwner(userId: string) {
     return OWNERS.includes(userId)
       ? this.ok()
-      : this.error({ message: "Only bot owners can use this command." });
+      : this.error({
+          message:
+            "Seuls les propriétaires du bot peuvent utiliser cette commande.",
+        });
   }
 }
 

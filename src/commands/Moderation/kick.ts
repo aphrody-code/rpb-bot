@@ -5,7 +5,7 @@ export class KickCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, {
       ...options,
-      description: "Kick a member from the server",
+      description: "Expulser un membre du serveur",
       preconditions: ["ModeratorOnly"],
     });
   }
@@ -14,17 +14,17 @@ export class KickCommand extends Command {
     registry.registerChatInputCommand((builder) =>
       builder
         .setName("kick")
-        .setDescription("Kick a member from the server")
+        .setDescription("Expulser un membre du serveur")
         .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
-        .setDMPermission(false)
+        .setContexts(0)
         .addUserOption((opt) =>
           opt
-            .setName("member")
-            .setDescription("The member to kick")
+            .setName("membre")
+            .setDescription("Le membre à expulser")
             .setRequired(true),
         )
         .addStringOption((opt) =>
-          opt.setName("reason").setDescription("Reason for the kick"),
+          opt.setName("raison").setDescription("Raison de l'expulsion"),
         ),
     );
   }
@@ -32,39 +32,39 @@ export class KickCommand extends Command {
   override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction,
   ) {
-    const target = interaction.options.getUser("member", true);
+    const target = interaction.options.getUser("membre", true);
     const reason =
-      interaction.options.getString("reason") ?? "No reason provided";
+      interaction.options.getString("raison") ?? "Aucune raison fournie";
     const member = interaction.guild?.members.cache.get(target.id);
 
     if (!member) {
       return interaction.reply({
-        content: "❌ Member not found.",
+        content: "❌ Membre introuvable.",
         ephemeral: true,
       });
     }
 
     if (!member.kickable) {
       return interaction.reply({
-        content: "❌ I cannot kick this member.",
+        content: "❌ Je ne peux pas expulser ce membre.",
         ephemeral: true,
       });
     }
 
     try {
-      await member.kick(`${reason} | Kicked by ${interaction.user.tag}`);
+      await member.kick(`${reason} | Expulsé par ${interaction.user.tag}`);
 
       const embed = new EmbedBuilder()
-        .setTitle("👢 Member Kicked")
+        .setTitle("👢 Membre expulsé")
         .setColor(0xffa500)
         .addFields(
           {
-            name: "Member",
+            name: "Membre",
             value: `${target.tag} (${target.id})`,
             inline: true,
           },
-          { name: "Moderator", value: interaction.user.tag, inline: true },
-          { name: "Reason", value: reason },
+          { name: "Modérateur", value: interaction.user.tag, inline: true },
+          { name: "Raison", value: reason },
         )
         .setThumbnail(target.displayAvatarURL())
         .setTimestamp();
@@ -73,7 +73,7 @@ export class KickCommand extends Command {
     } catch (error) {
       this.container.logger.error("Kick command error:", error);
       return interaction.reply({
-        content: "❌ Failed to kick member.",
+        content: "❌ Échec de l'expulsion du membre.",
         ephemeral: true,
       });
     }

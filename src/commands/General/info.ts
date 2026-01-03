@@ -83,7 +83,7 @@ export class InfoCommand extends Command {
         { name: "🟢 Node.js", value: process.version, inline: true },
         {
           name: "💾 Mémoire",
-          value: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`,
+          value: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)} Mo`,
           inline: true,
         },
       )

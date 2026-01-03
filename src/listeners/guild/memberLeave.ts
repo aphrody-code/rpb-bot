@@ -13,10 +13,10 @@ export class MemberLeaveListener extends Listener<
 
   override async run(member: GuildMember) {
     this.container.logger.info(
-      `Member left: ${member.user.tag} from ${member.guild.name}`,
+      `Membre parti : ${member.user.tag} de ${member.guild.name}`,
     );
 
-    // Find log channel (customize this logic as needed)
+    // Trouver le salon de logs
     const logChannel = member.guild.channels.cache.find(
       (c) => c.name.includes("log") || c.name.includes("mod-log"),
     );
@@ -24,17 +24,17 @@ export class MemberLeaveListener extends Listener<
     if (!logChannel?.isTextBased()) return;
 
     const embed = new EmbedBuilder()
-      .setTitle("👋 Member Left")
+      .setTitle("👋 Membre parti")
       .setColor(0xff6b6b)
       .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
       .addFields(
-        { name: "Member", value: member.user.tag, inline: true },
+        { name: "Membre", value: member.user.tag, inline: true },
         { name: "ID", value: member.id, inline: true },
         {
-          name: "Joined",
+          name: "A rejoint",
           value: member.joinedAt
             ? `<t:${Math.floor(member.joinedAt.getTime() / 1000)}:R>`
-            : "Unknown",
+            : "Inconnu",
           inline: true,
         },
       )
@@ -43,7 +43,7 @@ export class MemberLeaveListener extends Listener<
     try {
       await logChannel.send({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Failed to send leave message:", error);
+      this.container.logger.error("Échec envoi message départ :", error);
     }
   }
 }

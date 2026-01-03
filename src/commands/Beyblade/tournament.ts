@@ -6,8 +6,13 @@ import {
   EmbedBuilder,
   PermissionFlagsBits,
 } from "discord.js";
+import {
+  importTournament,
+  syncParticipants,
+} from "../../lib/challonge-sync.js";
 import { getChallongeClient } from "../../lib/challonge.js";
 import { Colors, RPB } from "../../lib/constants.js";
+import prisma from "../../lib/prisma.js";
 
 export class TournamentCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -101,6 +106,39 @@ export class TournamentCommand extends Command {
                 .setName("description")
                 .setDescription("Description du tournoi"),
             ),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("importer")
+            .setDescription(
+              "Importer un tournoi Challonge en base de données (Admin)",
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName("id")
+                .setDescription("ID ou URL du tournoi Challonge")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("sync")
+            .setDescription(
+              "Synchroniser les participants d'un tournoi (Admin)",
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName("id")
+                .setDescription("ID ou URL du tournoi Challonge")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("local")
+            .setDescription(
+              "Affiche les tournois depuis la base de données locale",
+            ),
         ),
     );
   }
@@ -123,6 +161,12 @@ export class TournamentCommand extends Command {
         return this.showRules(interaction);
       case "créer":
         return this.createTournament(interaction);
+      case "importer":
+        return this.importTournament(interaction);
+      case "sync":
+        return this.syncTournament(interaction);
+      case "local":
+        return this.listLocalTournaments(interaction);
       default:
         return interaction.reply({
           content: "❌ Sous-commande inconnue.",
@@ -419,6 +463,177 @@ export class TournamentCommand extends Command {
       .setTimestamp();
 
     return interaction.reply({ embeds: [embed] });
+  }
+
+  private async importTournament(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
+    // Check admin permissions
+    if (
+      !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)
+    ) {
+      return interaction.reply({
+        content: "❌ Seuls les administrateurs peuvent importer des tournois.",
+        ephemeral: true,
+      });
+    }
+
+    const challongeId = interaction.options.getString("id", true);
+    await interaction.deferReply();
+
+    try {
+      const result = await importTournament(challongeId);
+
+      if (!result.success) {
+        return interaction.editReply(`❌ Erreur: ${result.error}`);
+      }
+
+      const embed = new EmbedBuilder()
+        .setTitle("✅ Tournoi importé !")
+        .setColor(Colors.Success)
+        .setDescription(
+          `Le tournoi a été importé en base de données.\n\n` +
+            `**ID Challonge:** ${challongeId}\n` +
+            `**Participants importés:** ${result.participantsCount}\n` +
+            `**Requêtes API utilisées:** ${result.apiRequestsUsed}`,
+        )
+        .addFields({
+          name: "💡 Info",
+          value:
+            "Le tournoi est maintenant en cache. Les participants seront synchronisés " +
+            "automatiquement 24h avant le début du tournoi.",
+        })
+        .setFooter({ text: RPB.FullName })
+        .setTimestamp();
+
+      return interaction.editReply({ embeds: [embed] });
+    } catch (error) {
+      this.container.logger.error("Import tournament error:", error);
+      return interaction.editReply("❌ Erreur lors de l'import du tournoi.");
+    }
+  }
+
+  private async syncTournament(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
+    // Check admin permissions
+    if (
+      !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)
+    ) {
+      return interaction.reply({
+        content:
+          "❌ Seuls les administrateurs peuvent synchroniser les tournois.",
+        ephemeral: true,
+      });
+    }
+
+    const challongeId = interaction.options.getString("id", true);
+    await interaction.deferReply();
+
+    try {
+      const result = await syncParticipants(challongeId);
+
+      if (!result.success) {
+        return interaction.editReply(`❌ Erreur: ${result.error}`);
+      }
+
+      const embed = new EmbedBuilder()
+        .setTitle("🔄 Synchronisation terminée")
+        .setColor(Colors.Success)
+        .setDescription(
+          `**ID Challonge:** ${challongeId}\n` +
+            `**Participants synchronisés:** ${result.participantsCount}\n` +
+            `**Requêtes API utilisées:** ${result.apiRequestsUsed}`,
+        )
+        .addFields({
+          name: "⚠️ Attention",
+          value:
+            "Chaque sync consomme 1 requête API. " +
+            "Limite: 500 requêtes/mois. Utilisez avec parcimonie !",
+        })
+        .setFooter({ text: RPB.FullName })
+        .setTimestamp();
+
+      return interaction.editReply({ embeds: [embed] });
+    } catch (error) {
+      this.container.logger.error("Sync tournament error:", error);
+      return interaction.editReply("❌ Erreur lors de la synchronisation.");
+    }
+  }
+
+  private async listLocalTournaments(
+    interaction: Command.ChatInputCommandInteraction,
+  ) {
+    await interaction.deferReply();
+
+    try {
+      const tournaments = await prisma.tournament.findMany({
+        orderBy: { date: "asc" },
+        include: {
+          _count: { select: { participants: true } },
+        },
+        take: 10,
+      });
+
+      if (tournaments.length === 0) {
+        return interaction.editReply("📭 Aucun tournoi en base de données.");
+      }
+
+      const embed = new EmbedBuilder()
+        .setTitle("🏆 Tournois RPB (Local)")
+        .setColor(Colors.Primary)
+        .setDescription(
+          "Tournois stockés en base de données (pas de requête API)",
+        )
+        .setFooter({ text: RPB.FullName })
+        .setTimestamp();
+
+      for (const t of tournaments) {
+        const stateEmoji = this.getLocalStateEmoji(t.status);
+        const date = t.date
+          ? `<t:${Math.floor(t.date.getTime() / 1000)}:R>`
+          : "Non défini";
+
+        embed.addFields({
+          name: `${stateEmoji} ${t.name}`,
+          value:
+            `📊 ${t._count.participants} participants\n` +
+            `📅 ${date}\n` +
+            (t.challongeId
+              ? `🔗 [Challonge](https://challonge.com/${t.challongeId})`
+              : ""),
+          inline: true,
+        });
+      }
+
+      return interaction.editReply({ embeds: [embed] });
+    } catch (error) {
+      this.container.logger.error("List local tournaments error:", error);
+      return interaction.editReply(
+        "❌ Erreur lors de la récupération des tournois.",
+      );
+    }
+  }
+
+  private getLocalStateEmoji(status: string): string {
+    switch (status) {
+      case "UPCOMING":
+        return "📅";
+      case "REGISTRATION_OPEN":
+        return "🟡";
+      case "REGISTRATION_CLOSED":
+        return "🔒";
+      case "CHECKIN":
+        return "📋";
+      case "UNDERWAY":
+        return "🟢";
+      case "COMPLETE":
+        return "✅";
+      case "CANCELLED":
+        return "❌";
+      default:
+        return "⚪";
+    }
   }
 
   private getStateEmoji(state: string): string {

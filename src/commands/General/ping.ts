@@ -22,7 +22,7 @@ export class PingCommand extends Command {
     interaction: Command.ChatInputCommandInteraction,
   ) {
     const sent = await interaction.reply({
-      content: "🏓 Pinging...",
+      content: "🏓 Ping en cours...",
       withResponse: true,
     });
 

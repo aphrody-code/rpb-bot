@@ -7,6 +7,6 @@ export class ReadyListener extends Listener<Events.ClientReady> {
   }
 
   override run(...[client]: ClientEvents[Events.ClientReady]) {
-    container.logger.info("Logged in as:", client.user.tag);
+    container.logger.info("Connecté en tant que :", client.user.tag);
   }
 }

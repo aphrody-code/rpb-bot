@@ -5,7 +5,7 @@ export class ClearCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, {
       ...options,
-      description: "Delete multiple messages at once",
+      description: "Supprimer plusieurs messages à la fois",
       preconditions: ["ModeratorOnly"],
     });
   }
@@ -14,21 +14,23 @@ export class ClearCommand extends Command {
     registry.registerChatInputCommand((builder) =>
       builder
         .setName("clear")
-        .setDescription("Delete multiple messages at once")
+        .setDescription("Supprimer plusieurs messages à la fois")
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
-        .setDMPermission(false)
+        .setContexts(0)
         .addIntegerOption((opt) =>
           opt
-            .setName("amount")
-            .setDescription("Number of messages to delete (1-100)")
+            .setName("nombre")
+            .setDescription("Nombre de messages à supprimer (1-100)")
             .setRequired(true)
             .setMinValue(1)
             .setMaxValue(100),
         )
         .addUserOption((opt) =>
           opt
-            .setName("user")
-            .setDescription("Only delete messages from this user"),
+            .setName("utilisateur")
+            .setDescription(
+              "Supprimer uniquement les messages de cet utilisateur",
+            ),
         ),
     );
   }
@@ -36,13 +38,13 @@ export class ClearCommand extends Command {
   override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction,
   ) {
-    const amount = interaction.options.getInteger("amount", true);
-    const targetUser = interaction.options.getUser("user");
+    const amount = interaction.options.getInteger("nombre", true);
+    const targetUser = interaction.options.getUser("utilisateur");
     const channel = interaction.channel as TextChannel;
 
     if (!channel || !("bulkDelete" in channel)) {
       return interaction.reply({
-        content: "❌ Cannot delete messages in this channel.",
+        content: "❌ Impossible de supprimer des messages dans ce salon.",
         ephemeral: true,
       });
     }
@@ -56,28 +58,28 @@ export class ClearCommand extends Command {
         messages = messages.filter((m) => m.author.id === targetUser.id);
       }
 
-      // Filter out messages older than 14 days (bulk delete limit)
+      // Filtrer les messages de plus de 14 jours (limite de suppression en masse)
       const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
       messages = messages.filter((m) => m.createdTimestamp > twoWeeksAgo);
 
       const deleted = await channel.bulkDelete(messages, true);
 
       const embed = new EmbedBuilder()
-        .setTitle("🧹 Messages Cleared")
+        .setTitle("🧹 Messages supprimés")
         .setColor(0x00ff00)
         .addFields(
           {
-            name: "Deleted",
+            name: "Supprimés",
             value: `${deleted.size} message(s)`,
             inline: true,
           },
-          { name: "Moderator", value: interaction.user.tag, inline: true },
+          { name: "Modérateur", value: interaction.user.tag, inline: true },
         )
         .setTimestamp();
 
       if (targetUser) {
         embed.addFields({
-          name: "From User",
+          name: "De l'utilisateur",
           value: targetUser.tag,
           inline: true,
         });
@@ -87,7 +89,7 @@ export class ClearCommand extends Command {
     } catch (error) {
       this.container.logger.error("Clear command error:", error);
       return interaction.editReply({
-        content: "❌ Failed to delete messages.",
+        content: "❌ Échec de la suppression des messages.",
       });
     }
   }

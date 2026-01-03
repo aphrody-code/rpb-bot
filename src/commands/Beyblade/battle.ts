@@ -1,6 +1,17 @@
 import { Command } from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+} from "discord.js";
 import { Colors, RPB } from "../../lib/constants.js";
+
+// Store pending battles
+const pendingBattles = new Map<
+  string,
+  { opponentId: string; channelId: string; timestamp: number }
+>();
 
 const battleResults = [
   { result: "burst", message: "💥 **BURST FINISH !**", points: 2, emoji: "💥" },
@@ -34,6 +45,12 @@ export class BattleCommand extends Command {
             .setName("adversaire")
             .setDescription("Ton adversaire")
             .setRequired(true),
+        )
+        .addBooleanOption((opt) =>
+          opt
+            .setName("rapide")
+            .setDescription("Combat rapide sans confirmation")
+            .setRequired(false),
         ),
     );
   }
@@ -42,6 +59,7 @@ export class BattleCommand extends Command {
     interaction: Command.ChatInputCommandInteraction,
   ) {
     const opponent = interaction.options.getUser("adversaire", true);
+    const quickBattle = interaction.options.getBoolean("rapide") ?? false;
     const challenger = interaction.user;
 
     if (opponent.id === challenger.id) {
@@ -58,6 +76,72 @@ export class BattleCommand extends Command {
       });
     }
 
+    // Quick battle mode (old behavior)
+    if (quickBattle) {
+      return this.executeQuickBattle(interaction, challenger, opponent);
+    }
+
+    // Challenge mode with accept/decline buttons
+    pendingBattles.set(challenger.id, {
+      opponentId: opponent.id,
+      channelId: interaction.channelId,
+      timestamp: Date.now(),
+    });
+
+    // Auto-expire after 5 minutes
+    setTimeout(
+      () => {
+        pendingBattles.delete(challenger.id);
+      },
+      5 * 60 * 1000,
+    );
+
+    const embed = new EmbedBuilder()
+      .setTitle("⚔️ Défi Beyblade !")
+      .setDescription(
+        `**${challenger.displayName}** défie **${opponent.displayName}** en combat !\n\n` +
+          `${opponent}, acceptes-tu le défi ?`,
+      )
+      .setColor(Colors.Secondary)
+      .setThumbnail(challenger.displayAvatarURL({ size: 128 }))
+      .addFields(
+        { name: "🎯 Challenger", value: challenger.tag, inline: true },
+        { name: "🎮 Adversaire", value: opponent.tag, inline: true },
+      )
+      .setFooter({ text: `${RPB.FullName} | Le défi expire dans 5 minutes` })
+      .setTimestamp();
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`battle-accept-${challenger.id}`)
+        .setLabel("Accepter le défi")
+        .setStyle(ButtonStyle.Success)
+        .setEmoji("⚔️"),
+      new ButtonBuilder()
+        .setCustomId(`battle-decline-${challenger.id}`)
+        .setLabel("Refuser")
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji("❌"),
+    );
+
+    return interaction.reply({ embeds: [embed], components: [row] });
+  }
+
+  private async executeQuickBattle(
+    interaction: Command.ChatInputCommandInteraction,
+    challenger: {
+      id: string;
+      displayName: string;
+      tag: string;
+      displayAvatarURL: (opts: { size: number }) => string;
+    },
+    opponent: {
+      id: string;
+      displayName: string;
+      tag: string;
+      displayAvatarURL: (opts: { size: number }) => string;
+    },
+  ) {
     // Initial message
     const startEmbed = new EmbedBuilder()
       .setTitle("⚔️ Combat Beyblade !")
@@ -100,10 +184,20 @@ export class BattleCommand extends Command {
       .setFooter({ text: `${RPB.FullName} | GG !` })
       .setTimestamp();
 
-    return interaction.editReply({ embeds: [resultEmbed] });
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`battle-rematch-${loser.id}`)
+        .setLabel("Revanche !")
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji("🔄"),
+    );
+
+    return interaction.editReply({ embeds: [resultEmbed], components: [row] });
   }
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
+
+export { pendingBattles };

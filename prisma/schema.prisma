@@ -1,9 +1,11 @@
-// RPB Dashboard - Prisma Schema
+// RPB Bot - Prisma Schema
 // République Populaire du Beyblade
+// NOTE: Keep in sync with rpb-dashboard/prisma/schema.prisma
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
 }
 
 datasource db {
@@ -26,6 +28,7 @@ model User {
   // Discord OAuth
   discordId     String?   @unique
   discordTag    String?
+  role          String?   @default("user")
 
   // Relations
   sessions      Session[]
