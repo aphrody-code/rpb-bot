@@ -4,6 +4,7 @@ import {
   type IncomingMessage,
   type ServerResponse,
 } from "node:http";
+import { Colors, RPB } from "./constants.js";
 
 const logs: { timestamp: string; level: string; message: string }[] = [];
 const MAX_LOGS = 1000;
@@ -73,7 +74,7 @@ function handleRequest(req: IncomingMessage, res: ServerResponse) {
     return;
   }
 
-  const url = new URL(req.url || "/", `http://${req.headers.host}`);
+  const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
 
   if (req.method === "OPTIONS") {
     res.writeHead(204);
@@ -91,6 +92,41 @@ function handleRequest(req: IncomingMessage, res: ServerResponse) {
   if (url.pathname === "/api/status") {
     res.writeHead(200);
     res.end(JSON.stringify(getBotStatus()));
+    return;
+  }
+
+  if (url.pathname === "/api/config") {
+    // Get safe environment variables (no secrets)
+    const safeEnvKeys = ["NODE_ENV", "GUILD_ID", "OWNER_IDS"];
+    const env: Record<string, string> = {};
+    for (const key of safeEnvKeys) {
+      if (process.env[key]) {
+        env[key] = process.env[key];
+      }
+    }
+
+    // Convert Colors to hex strings for display
+    const colorsFormatted: Record<string, string> = {};
+    for (const [key, value] of Object.entries(Colors)) {
+      colorsFormatted[key] = `0x${value.toString(16).padStart(6, "0")}`;
+    }
+
+    res.writeHead(200);
+    res.end(
+      JSON.stringify({
+        env,
+        constants: {
+          RPB: {
+            Name: RPB.Name,
+            FullName: RPB.FullName,
+            Discord: RPB.Discord,
+          },
+          Colors: colorsFormatted,
+          Channels: RPB.Channels,
+          Roles: {},
+        },
+      }),
+    );
     return;
   }
 
