@@ -26,5 +26,5 @@
     }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "src/generated"]
+  "exclude": ["node_modules"]
 }

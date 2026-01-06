@@ -1,6 +1,5 @@
-// RPB Bot - Prisma Schema
+// RPB Dashboard - Prisma Schema
 // République Populaire du Beyblade
-// NOTE: Keep in sync with rpb-dashboard/prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -16,31 +15,32 @@ datasource db {
 // ============================================================================
 
 model User {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String?
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Discord OAuth
-  discordId     String?   @unique
-  discordTag    String?
-  role          String?   @default("user")
+  discordId  String? @unique
+  discordTag String?
+  role       String? @default("user")
 
   // Better Auth admin plugin fields
-  banned        Boolean?  @default(false)
-  banReason     String?
-  banExpires    DateTime?
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
 
   // Relations
-  sessions      Session[]
-  accounts      Account[]
+  sessions Session[]
+  accounts Account[]
 
   // RPB Relations
-  profile       Profile?
-  tournaments   TournamentParticipant[]
+  profile     Profile?
+  tournaments TournamentParticipant[]
+  decks       Deck[]
 
   // Match relations
   player1Matches TournamentMatch[] @relation("Player1Matches")
@@ -105,19 +105,19 @@ model Verification {
 // ============================================================================
 
 model Profile {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Beyblade info
-  bladerName    String?
-  favoriteType  BeyType?
-  experience    ExperienceLevel @default(BEGINNER)
-  bio           String?
+  bladerName   String?
+  favoriteType BeyType?
+  experience   ExperienceLevel @default(BEGINNER)
+  bio          String?
 
   // Stats
-  wins          Int @default(0)
-  losses        Int @default(0)
+  wins           Int @default(0)
+  losses         Int @default(0)
   tournamentWins Int @default(0)
 
   // Social
@@ -137,12 +137,158 @@ enum BeyType {
   BALANCE
 }
 
+enum PartType {
+  BLADE
+  RATCHET
+  BIT
+}
+
+model Part {
+  id         String   @id @default(cuid())
+  externalId String   @unique
+  name       String
+  nameJp     String?
+  type       PartType
+  beyType    BeyType? // Only for Blades?
+
+  // Stats (valeurs avec modificateurs: "29+", "31-", "32=")
+  weight  Float? // Poids en grammes
+  attack  String? // Stat attaque (ex: "29+")
+  defense String? // Stat défense
+  stamina String? // Stat endurance
+  burst   String? // Résistance au burst
+  dash    String? // Mobilité
+
+  // Spécifique aux Ratchets
+  height      Int? // Hauteur (60, 70, 80, etc.)
+  protrusions Int? // Nombre de crans (3, 4, 5, 9)
+
+  // Spécifique aux Bits
+  gearRatio  String? // Ratio (ex: "1=", "2:1", "3:1")
+  shaftWidth String? // Épaisseur de l'axe (L, M, S)
+  tipType    String? // Type de pointe (Flat, Ball, Point, etc.)
+
+  // Métadonnées
+  releaseDate DateTime?
+  imageUrl    String?
+  rarity      String? // Common, Rare, Prize, etc.
+
+  // Relations
+  deckBlades   DeckBey[] @relation("BladeRelation")
+  deckRatchets DeckBey[] @relation("RatchetRelation")
+  deckBits     DeckBey[] @relation("BitRelation")
+
+  // Beyblade relations
+  beyBlades   Beyblade[] @relation("BeyBladeRelation")
+  beyRatchets Beyblade[] @relation("BeyRatchetRelation")
+  beyBits     Beyblade[] @relation("BeyBitRelation")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([beyType])
+  @@map("parts")
+}
+
+// ============================================================================
+// RPB - Beyblade (Complete Combination)
+// ============================================================================
+
+model Beyblade {
+  id   String @id @default(cuid())
+  code String @unique // e.g., "dran-sword-3-60-f", "hells-scythe-4-60-t"
+
+  // Full name from product (e.g., "ドランソード3-60F")
+  name   String
+  nameEn String? // English name
+  nameFr String? // French name
+
+  // Parts composition
+  bladeId   String
+  blade     Part   @relation("BeyBladeRelation", fields: [bladeId], references: [id])
+  ratchetId String
+  ratchet   Part   @relation("BeyRatchetRelation", fields: [ratchetId], references: [id])
+  bitId     String
+  bit       Part   @relation("BeyBitRelation", fields: [bitId], references: [id])
+
+  // Type (inherited from Blade)
+  beyType BeyType?
+
+  // Computed total stats (can be null if parts don't have stats)
+  totalAttack  Int?
+  totalDefense Int?
+  totalStamina Int?
+  totalBurst   Int?
+  totalDash    Int?
+  totalWeight  Float?
+
+  // Media
+  imageUrl String?
+
+  // Link to official product
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([beyType])
+  @@map("beyblades")
+}
+
 enum ExperienceLevel {
   BEGINNER
   INTERMEDIATE
   ADVANCED
   EXPERT
   LEGEND
+}
+
+// ============================================================================
+// RPB - Deck System
+// ============================================================================
+
+model Deck {
+  id       String  @id @default(cuid())
+  name     String
+  isActive Boolean @default(false) // Active deck for tournaments
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  beys DeckBey[]
+
+  // Tournament usage
+  tournamentParticipants TournamentParticipant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("decks")
+}
+
+model DeckBey {
+  id       String  @id @default(cuid())
+  position Int // 1, 2 or 3
+  nickname String? // Optional nickname for the Bey
+
+  deckId String
+  deck   Deck   @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  bladeId String
+  blade   Part   @relation("BladeRelation", fields: [bladeId], references: [id])
+
+  ratchetId String
+  ratchet   Part   @relation("RatchetRelation", fields: [ratchetId], references: [id])
+
+  bitId String
+  bit   Part   @relation("BitRelation", fields: [bitId], references: [id])
+
+  @@unique([deckId, position])
+  @@index([deckId])
+  @@map("deck_beys")
 }
 
 // ============================================================================
@@ -204,9 +350,13 @@ model TournamentParticipant {
   // Challonge participant ID
   challongeParticipantId String?
 
+  // Deck used for this tournament
+  deckId String?
+  deck   Deck?  @relation(fields: [deckId], references: [id])
+
   // Status
-  checkedIn      Boolean @default(false)
-  seed           Int?
+  checkedIn Boolean @default(false)
+  seed      Int?
   finalPlacement Int? // Final placement in tournament (1st, 2nd, 3rd, etc.)
 
   // Stats for this tournament
@@ -272,4 +422,80 @@ model StaffMember {
   updatedAt DateTime @updatedAt
 
   @@map("staff_members")
+}
+
+// ============================================================================
+// RPB - CMS / Content Models
+// ============================================================================
+
+model ContentBlock {
+  id       String  @id @default(cuid())
+  slug     String  @unique // e.g., "about-history", "about-values"
+  title    String? // Friendly name for admin UI
+  type     String  @default("text") // text, json, html, markdown
+  content  String // Stored as string, parsed based on type
+  metadata Json? // Extra config (e.g., icon names)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("content_blocks")
+}
+
+// ============================================================================
+// RPB - Official Product Catalog (Takara Tomy)
+// ============================================================================
+
+model Product {
+  id   String @id @default(cuid())
+  code String @unique // BX-01, UX-17, CX-10, etc.
+
+  // Product info
+  name      String // Japanese name
+  nameEn    String? // English name (translated)
+  nameFr    String? // French name (translated)
+
+  // Product type
+  productType ProductType
+  productLine ProductLine // BX, UX, CX
+
+  // Pricing & Availability
+  price       Int? // Price in JPY (tax included)
+  releaseDate DateTime?
+  isLimited   Boolean   @default(false) // Limited edition, event exclusive, etc.
+  limitedNote String? // "アプリ・イベント限定", "B4ストア限定", etc.
+
+  // Media
+  imageUrl   String?
+  productUrl String? // Official product page URL
+  shopUrl    String? // TakaraTomyMall URL
+
+  // Contents (for sets/starters)
+  includedParts String[] // List of included part codes
+
+  // Relations
+  beyblades Beyblade[] // Beyblades included in this product
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productLine])
+  @@index([productType])
+  @@map("products")
+}
+
+enum ProductType {
+  STARTER // Includes launcher
+  BOOSTER // Bey only
+  RANDOM_BOOSTER
+  SET // Multiple beys or deck set
+  DOUBLE_STARTER // Two beys with launchers
+  TOOL // Launcher, grip, stadium, etc.
+  COLOR_CHOICE // Color customization
+}
+
+enum ProductLine {
+  BX // Basic Line
+  UX // Unique Line
+  CX // Custom Line
 }

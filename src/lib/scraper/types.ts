@@ -16,6 +16,12 @@ export interface ScraperOptions {
    * Default: 1 (single page mode)
    */
   maxRequestsPerCrawl?: number;
+
+  /**
+   * Whether to use Cheerio instead of Puppeteer for faster scraping (no JS).
+   * Default: false
+   */
+  useCheerio?: boolean;
 }
 
 export interface ScrapedPage {
@@ -54,6 +60,18 @@ export interface ScrapedPage {
    * List of all valid links found on the page (for mapping).
    */
   links: string[];
+
+  /**
+   * Product data if extracted from the page.
+   */
+  product?: {
+    code: string;
+    name: string;
+    type: string;
+    price?: number;
+    releaseDate?: string;
+    isLimited: boolean;
+  };
 
   /**
    * Metadata extracted from the page (meta tags, open graph).
