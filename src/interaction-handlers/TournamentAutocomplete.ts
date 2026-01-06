@@ -1,10 +1,10 @@
 import {
   InteractionHandler,
   InteractionHandlerTypes,
-} from "@sapphire/framework";
-import type { AutocompleteInteraction } from "discord.js";
-import { getChallongeClient } from "../lib/challonge.js";
-import prisma from "../lib/prisma.js";
+} from '@sapphire/framework';
+import type { AutocompleteInteraction } from 'discord.js';
+import { getChallongeClient } from '../lib/challonge.js';
+import prisma from '../lib/prisma.js';
 
 export class TournamentAutocompleteHandler extends InteractionHandler {
   public constructor(context: InteractionHandler.LoaderContext) {
@@ -20,17 +20,17 @@ export class TournamentAutocompleteHandler extends InteractionHandler {
 
     // Only handle specific options
     if (
-      commandName === "tournoi" &&
-      (focusedOption.name === "id" || focusedOption.name === "tournoi")
+      commandName === 'tournoi' &&
+      (focusedOption.name === 'id' || focusedOption.name === 'tournoi')
     ) {
-      return this.some({ type: "tournament", query: focusedOption.value });
+      return this.some({ type: 'tournament', query: focusedOption.value });
     }
 
     if (
-      (commandName === "profil" || commandName === "stats") &&
-      focusedOption.name === "joueur"
+      (commandName === 'profil' || commandName === 'stats') &&
+      focusedOption.name === 'joueur'
     ) {
-      return this.some({ type: "player", query: focusedOption.value });
+      return this.some({ type: 'player', query: focusedOption.value });
     }
 
     return this.none();
@@ -41,9 +41,9 @@ export class TournamentAutocompleteHandler extends InteractionHandler {
     { type, query }: { type: string; query: string },
   ) {
     switch (type) {
-      case "tournament":
+      case 'tournament':
         return this.autocompleteTournaments(interaction, query);
-      case "player":
+      case 'player':
         return this.autocompletePlayers(interaction, query);
       default:
         return interaction.respond([]);
@@ -60,17 +60,17 @@ export class TournamentAutocompleteHandler extends InteractionHandler {
         where: {
           name: {
             contains: query,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
         take: 15,
-        orderBy: { date: "desc" },
+        orderBy: { date: 'desc' },
       });
 
       if (localTournaments.length > 0) {
         return interaction.respond(
           localTournaments.map((t) => ({
-            name: `${t.name} (${t.date.toLocaleDateString("fr-FR")})`,
+            name: `${t.name} (${t.date.toLocaleDateString('fr-FR')})`,
             value: t.id,
           })),
         );
@@ -93,7 +93,7 @@ export class TournamentAutocompleteHandler extends InteractionHandler {
         })),
       );
     } catch (error) {
-      this.container.logger.error("Tournament autocomplete error:", error);
+      this.container.logger.error('Tournament autocomplete error:', error);
       return interaction.respond([]);
     }
   }
@@ -106,11 +106,11 @@ export class TournamentAutocompleteHandler extends InteractionHandler {
       const users = await prisma.user.findMany({
         where: {
           OR: [
-            { name: { contains: query, mode: "insensitive" } },
-            { discordTag: { contains: query, mode: "insensitive" } },
+            { name: { contains: query, mode: 'insensitive' } },
+            { discordTag: { contains: query, mode: 'insensitive' } },
             {
               profile: {
-                bladerName: { contains: query, mode: "insensitive" },
+                bladerName: { contains: query, mode: 'insensitive' },
               },
             },
           ],
@@ -125,12 +125,12 @@ export class TournamentAutocompleteHandler extends InteractionHandler {
             u.profile?.bladerName ??
             u.name ??
             u.discordTag ??
-            "Utilisateur inconnu",
+            'Utilisateur inconnu',
           value: u.id,
         })),
       );
     } catch (error) {
-      this.container.logger.error("Player autocomplete error:", error);
+      this.container.logger.error('Player autocomplete error:', error);
       return interaction.respond([]);
     }
   }

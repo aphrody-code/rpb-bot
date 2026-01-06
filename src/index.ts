@@ -1,17 +1,33 @@
-import { container, SapphireClient } from "@sapphire/framework";
-import "@sapphire/plugin-logger/register";
-import "@sapphire/plugin-scheduled-tasks/register";
-import "@sapphire/plugin-subcommands/register";
-import { GatewayIntentBits, Partials } from "discord.js";
-import "dotenv/config";
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { startApiServer } from "./lib/api-server.js";
+import {
+  ApplicationCommandRegistries,
+  container,
+  RegisterBehavior,
+  SapphireClient,
+} from '@sapphire/framework';
+import '@sapphire/plugin-logger/register';
+import '@sapphire/plugin-scheduled-tasks/register';
+import '@sapphire/plugin-subcommands/register';
+import { GatewayIntentBits, Partials } from 'discord.js';
+import 'dotenv/config';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { startApiServer } from './lib/api-server.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Set default behavior for application commands
+ApplicationCommandRegistries.setDefaultBehaviorWhenNotIdentical(
+  RegisterBehavior.BulkOverwrite,
+);
+
+// If GUILD_ID is provided in .env, set it as default for faster command registration during development
+// We only do this in development to avoid duplicate commands in production (global + guild)
+if (process.env.NODE_ENV !== 'production' && process.env.GUILD_ID) {
+  ApplicationCommandRegistries.setDefaultGuildIds([process.env.GUILD_ID]);
+}
+
 // Start API server for dashboard integration
-const apiPort = parseInt(process.env.BOT_API_PORT ?? "3001", 10);
+const apiPort = parseInt(process.env.BOT_API_PORT ?? '3001', 10);
 startApiServer(apiPort);
 
 try {
@@ -29,8 +45,8 @@ try {
     tasks: {
       bull: {
         connection: {
-          host: process.env.REDIS_HOST ?? "localhost",
-          port: parseInt(process.env.REDIS_PORT ?? "6379"),
+          host: process.env.REDIS_HOST ?? 'localhost',
+          port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
           password: process.env.REDIS_PASSWORD,
         },
       },
@@ -39,6 +55,6 @@ try {
 
   await client.login(process.env.DISCORD_TOKEN);
 } catch (err) {
-  container.logger.error("Failed to login:", err);
+  container.logger.error('Failed to login:', err);
   process.exitCode = 1;
 }

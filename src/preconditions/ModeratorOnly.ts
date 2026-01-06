@@ -1,12 +1,12 @@
-import { Precondition } from "@sapphire/framework";
-import type { CommandInteraction, GuildMember, Message } from "discord.js";
-import { PermissionFlagsBits } from "discord.js";
+import { Precondition } from '@sapphire/framework';
+import type { CommandInteraction, GuildMember, Message } from 'discord.js';
+import { PermissionFlagsBits } from 'discord.js';
 
 export class ModeratorOnlyPrecondition extends Precondition {
   public override async messageRun(message: Message) {
     if (!message.member)
       return this.error({
-        message: "Cette commande ne peut être utilisée que sur un serveur.",
+        message: 'Cette commande ne peut être utilisée que sur un serveur.',
       });
     return this.checkModerator(message.member);
   }
@@ -15,7 +15,7 @@ export class ModeratorOnlyPrecondition extends Precondition {
     const member = interaction.member as GuildMember;
     if (!member)
       return this.error({
-        message: "Cette commande ne peut être utilisée que sur un serveur.",
+        message: 'Cette commande ne peut être utilisée que sur un serveur.',
       });
     return this.checkModerator(member);
   }
@@ -30,12 +30,12 @@ export class ModeratorOnlyPrecondition extends Precondition {
     return hasModPermissions
       ? this.ok()
       : this.error({
-          message: "Seuls les modérateurs peuvent utiliser cette commande.",
+          message: 'Seuls les modérateurs peuvent utiliser cette commande.',
         });
   }
 }
 
-declare module "@sapphire/framework" {
+declare module '@sapphire/framework' {
   interface Preconditions {
     ModeratorOnly: never;
   }

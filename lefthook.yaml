@@ -7,11 +7,8 @@ pre-commit:
     - name: check types
       run: pnpm tsc
 
-    - name: fix formatting
-      run: pnpm prettier --write .
-
-    - name: fix lint
-      run: pnpm eslint --fix
+    - name: biome check
+      run: pnpm biome check --write {staged_files} && git update-index --again
 
     - name: check diff
       run: git diff --exit-code pnpm-lock.yaml {staged_files}

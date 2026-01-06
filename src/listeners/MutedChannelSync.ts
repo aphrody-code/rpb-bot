@@ -1,15 +1,15 @@
-import { Listener } from "@sapphire/framework";
-import { ChannelType, type GuildChannel } from "discord.js";
+import { Listener } from '@sapphire/framework';
+import { ChannelType, type GuildChannel } from 'discord.js';
 
 // Salon visible pour les utilisateurs mutés
-const MUTED_CHANNEL_ID = process.env.MUTED_CHANNEL_ID ?? "1456761597245784260";
-const MUTED_ROLE_NAME = "Muted";
+const MUTED_CHANNEL_ID = process.env.MUTED_CHANNEL_ID ?? '1456761597245784260';
+const MUTED_ROLE_NAME = 'Muted';
 
 export class MutedChannelSyncListener extends Listener {
   constructor(context: Listener.LoaderContext, options: Listener.Options) {
     super(context, {
       ...options,
-      event: "channelCreate",
+      event: 'channelCreate',
     });
   }
 

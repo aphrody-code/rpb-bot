@@ -1,8 +1,8 @@
-import { ScheduledTask } from "@sapphire/plugin-scheduled-tasks";
+import { ScheduledTask } from '@sapphire/plugin-scheduled-tasks';
 import {
   getTournamentsNeedingSync,
   syncParticipants,
-} from "../lib/challonge-sync.js";
+} from '../lib/challonge-sync.js';
 
 /**
  * Tâche de synchronisation pré-tournoi
@@ -21,14 +21,14 @@ export class PreTournamentSyncTask extends ScheduledTask {
     super(context, {
       ...options,
       // Exécuter toutes les heures
-      pattern: "0 * * * *",
-      timezone: "Europe/Paris",
+      pattern: '0 * * * *',
+      timezone: 'Europe/Paris',
     });
   }
 
   public async run() {
     this.container.logger.info(
-      "[Task] Vérification des tournois à synchroniser...",
+      '[Task] Vérification des tournois à synchroniser...',
     );
 
     try {
@@ -36,7 +36,7 @@ export class PreTournamentSyncTask extends ScheduledTask {
       const tournamentsToSync = await getTournamentsNeedingSync();
 
       if (tournamentsToSync.length === 0) {
-        this.container.logger.info("[Task] Aucun tournoi à synchroniser");
+        this.container.logger.info('[Task] Aucun tournoi à synchroniser');
         return;
       }
 
@@ -68,12 +68,12 @@ export class PreTournamentSyncTask extends ScheduledTask {
         `[Task] Sync terminé. ${totalRequests} requêtes API utilisées.`,
       );
     } catch (error) {
-      this.container.logger.error("[Task] Erreur sync pré-tournoi:", error);
+      this.container.logger.error('[Task] Erreur sync pré-tournoi:', error);
     }
   }
 }
 
-declare module "@sapphire/plugin-scheduled-tasks" {
+declare module '@sapphire/plugin-scheduled-tasks' {
   interface ScheduledTasks {
     PreTournamentSync: never;
   }

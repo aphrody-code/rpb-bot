@@ -1,7 +1,7 @@
-import { ScheduledTask } from "@sapphire/plugin-scheduled-tasks";
-import { EmbedBuilder } from "discord.js";
-import { Colors, RPB } from "../lib/constants.js";
-import prisma from "../lib/prisma.js";
+import { ScheduledTask } from '@sapphire/plugin-scheduled-tasks';
+import { EmbedBuilder } from 'discord.js';
+import { Colors, RPB } from '../lib/constants.js';
+import prisma from '../lib/prisma.js';
 
 export class TournamentReminderTask extends ScheduledTask {
   public constructor(
@@ -11,12 +11,12 @@ export class TournamentReminderTask extends ScheduledTask {
     super(context, {
       ...options,
       // Run every hour at minute 0
-      pattern: "0 * * * *",
+      pattern: '0 * * * *',
     });
   }
 
   public async run() {
-    this.container.logger.info("[Task] Running tournament reminder check...");
+    this.container.logger.info('[Task] Running tournament reminder check...');
 
     try {
       // Find tournaments happening in the next 24 hours
@@ -30,7 +30,7 @@ export class TournamentReminderTask extends ScheduledTask {
             lte: tomorrow,
           },
           status: {
-            in: ["REGISTRATION_OPEN", "REGISTRATION_CLOSED", "UPCOMING"],
+            in: ['REGISTRATION_OPEN', 'REGISTRATION_CLOSED', 'UPCOMING'],
           },
         },
         include: {
@@ -53,7 +53,7 @@ export class TournamentReminderTask extends ScheduledTask {
         }
       }
     } catch (error) {
-      this.container.logger.error("[Task] Tournament reminder error:", error);
+      this.container.logger.error('[Task] Tournament reminder error:', error);
     }
   }
 
@@ -71,8 +71,8 @@ export class TournamentReminderTask extends ScheduledTask {
       .setTitle(`⏰ Rappel Tournoi - ${tournament.name}`)
       .setDescription(
         `Le tournoi commence dans **${hoursUntil} heure(s)** !\n\n` +
-          `📅 **Date:** ${tournament.date.toLocaleString("fr-FR")}\n` +
-          `📍 **Lieu:** ${tournament.location ?? "En ligne"}\n` +
+          `📅 **Date:** ${tournament.date.toLocaleString('fr-FR')}\n` +
+          `📍 **Lieu:** ${tournament.location ?? 'En ligne'}\n` +
           `👥 **Participants:** ${tournament.participants.length}`,
       )
       .setColor(hoursUntil <= 1 ? Colors.Error : Colors.Warning)
@@ -103,7 +103,7 @@ export class TournamentReminderTask extends ScheduledTask {
   }
 }
 
-declare module "@sapphire/plugin-scheduled-tasks" {
+declare module '@sapphire/plugin-scheduled-tasks' {
   interface ScheduledTasks {
     TournamentReminder: never;
   }

@@ -1,6 +1,6 @@
-import { container } from "@sapphire/framework";
-import { getChallongeClient } from "./challonge.js";
-import prisma from "./prisma.js";
+import { container } from '@sapphire/framework';
+import { getChallongeClient } from './challonge.js';
+import prisma from './prisma.js';
 
 /**
  * Service de synchronisation Challonge
@@ -117,10 +117,10 @@ export async function importTournament(
       apiRequestsUsed,
     };
   } catch (error) {
-    container.logger.error("[Sync] Erreur import tournoi:", error);
+    container.logger.error('[Sync] Erreur import tournoi:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Erreur inconnue",
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
       apiRequestsUsed,
     };
   }
@@ -198,10 +198,10 @@ export async function syncParticipants(
       apiRequestsUsed,
     };
   } catch (error) {
-    container.logger.error("[Sync] Erreur sync participants:", error);
+    container.logger.error('[Sync] Erreur sync participants:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Erreur inconnue",
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
       apiRequestsUsed,
     };
   }
@@ -230,7 +230,7 @@ export async function pushParticipantToChallonge(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Erreur inconnue",
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
     };
   }
 }
@@ -257,7 +257,7 @@ export async function shouldSyncRealtime(
   return (
     hoursUntilTournament <= 24 &&
     hoursUntilTournament > -6 &&
-    tournament.status !== "COMPLETE"
+    tournament.status !== 'COMPLETE'
   );
 }
 
@@ -272,7 +272,7 @@ export async function getTournamentsNeedingSync(): Promise<string[]> {
   const tournaments = await prisma.tournament.findMany({
     where: {
       challongeId: { not: null },
-      status: { not: "COMPLETE" },
+      status: { not: 'COMPLETE' },
       date: {
         gte: sixHoursAgo,
         lte: in24Hours,
@@ -292,26 +292,26 @@ export async function getTournamentsNeedingSync(): Promise<string[]> {
 function mapChallongeState(
   state: string,
 ):
-  | "UPCOMING"
-  | "REGISTRATION_OPEN"
-  | "REGISTRATION_CLOSED"
-  | "CHECKIN"
-  | "UNDERWAY"
-  | "COMPLETE"
-  | "CANCELLED" {
+  | 'UPCOMING'
+  | 'REGISTRATION_OPEN'
+  | 'REGISTRATION_CLOSED'
+  | 'CHECKIN'
+  | 'UNDERWAY'
+  | 'COMPLETE'
+  | 'CANCELLED' {
   switch (state) {
-    case "pending":
-      return "REGISTRATION_OPEN";
-    case "checking_in":
-      return "CHECKIN";
-    case "underway":
-    case "in_progress":
-      return "UNDERWAY";
-    case "complete":
-    case "ended":
-      return "COMPLETE";
+    case 'pending':
+      return 'REGISTRATION_OPEN';
+    case 'checking_in':
+      return 'CHECKIN';
+    case 'underway':
+    case 'in_progress':
+      return 'UNDERWAY';
+    case 'complete':
+    case 'ended':
+      return 'COMPLETE';
     default:
-      return "UPCOMING";
+      return 'UPCOMING';
   }
 }
 

@@ -1,8 +1,8 @@
 import {
   InteractionHandler,
   InteractionHandlerTypes,
-} from "@sapphire/framework";
-import type { ButtonInteraction } from "discord.js";
+} from '@sapphire/framework';
+import type { ButtonInteraction } from 'discord.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,9 +11,9 @@ import {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-} from "discord.js";
-import { Colors, RPB } from "../lib/constants.js";
-import prisma from "../lib/prisma.js";
+} from 'discord.js';
+import { Colors, RPB } from '../lib/constants.js';
+import prisma from '../lib/prisma.js';
 
 export class TournamentButtonHandler extends InteractionHandler {
   public constructor(context: InteractionHandler.LoaderContext) {
@@ -24,11 +24,11 @@ export class TournamentButtonHandler extends InteractionHandler {
 
   public override parse(interaction: ButtonInteraction) {
     // Handle tournament-related buttons
-    if (!interaction.customId.startsWith("tournament-")) {
+    if (!interaction.customId.startsWith('tournament-')) {
       return this.none();
     }
 
-    const [, action, tournamentId] = interaction.customId.split("-");
+    const [, action, tournamentId] = interaction.customId.split('-');
     return this.some({ action, tournamentId });
   }
 
@@ -37,17 +37,17 @@ export class TournamentButtonHandler extends InteractionHandler {
     { action, tournamentId }: { action: string; tournamentId: string },
   ) {
     switch (action) {
-      case "register":
+      case 'register':
         return this.handleRegister(interaction, tournamentId);
-      case "unregister":
+      case 'unregister':
         return this.handleUnregister(interaction, tournamentId);
-      case "checkin":
+      case 'checkin':
         return this.handleCheckIn(interaction, tournamentId);
-      case "info":
+      case 'info':
         return this.handleInfo(interaction, tournamentId);
       default:
         return interaction.reply({
-          content: "❌ Action inconnue.",
+          content: '❌ Action inconnue.',
           ephemeral: true,
         });
     }
@@ -60,21 +60,21 @@ export class TournamentButtonHandler extends InteractionHandler {
     // Show modal for registration details
     const modal = new ModalBuilder()
       .setCustomId(`tournament-register-modal-${tournamentId}`)
-      .setTitle("Inscription au tournoi");
+      .setTitle('Inscription au tournoi');
 
     const bladerNameInput = new TextInputBuilder()
-      .setCustomId("blader-name")
-      .setLabel("Ton nom de Blader")
+      .setCustomId('blader-name')
+      .setLabel('Ton nom de Blader')
       .setStyle(TextInputStyle.Short)
-      .setPlaceholder("Ex: Valt Aoi")
+      .setPlaceholder('Ex: Valt Aoi')
       .setRequired(true)
       .setMaxLength(32);
 
     const beybladeInput = new TextInputBuilder()
-      .setCustomId("beyblade")
-      .setLabel("Ta toupie principale")
+      .setCustomId('beyblade')
+      .setLabel('Ta toupie principale')
       .setStyle(TextInputStyle.Short)
-      .setPlaceholder("Ex: Dran Sword 3-60F")
+      .setPlaceholder('Ex: Dran Sword 3-60F')
       .setRequired(false)
       .setMaxLength(50);
 
@@ -124,17 +124,17 @@ export class TournamentButtonHandler extends InteractionHandler {
       });
 
       const embed = new EmbedBuilder()
-        .setTitle("👋 Désinscription confirmée")
-        .setDescription("Tu as été retiré du tournoi.")
+        .setTitle('👋 Désinscription confirmée')
+        .setDescription('Tu as été retiré du tournoi.')
         .setColor(Colors.Warning)
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Tournament unregister error:", error);
+      this.container.logger.error('Tournament unregister error:', error);
       return interaction.editReply({
-        content: "❌ Erreur lors de la désinscription.",
+        content: '❌ Erreur lors de la désinscription.',
       });
     }
   }
@@ -171,7 +171,7 @@ export class TournamentButtonHandler extends InteractionHandler {
 
       if (participant.checkedIn) {
         return interaction.editReply({
-          content: "✅ Tu es déjà check-in !",
+          content: '✅ Tu es déjà check-in !',
         });
       }
 
@@ -182,17 +182,17 @@ export class TournamentButtonHandler extends InteractionHandler {
       });
 
       const embed = new EmbedBuilder()
-        .setTitle("✅ Check-in confirmé !")
-        .setDescription("Tu es maintenant prêt pour le tournoi. Bonne chance !")
+        .setTitle('✅ Check-in confirmé !')
+        .setDescription('Tu es maintenant prêt pour le tournoi. Bonne chance !')
         .setColor(Colors.Success)
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Tournament check-in error:", error);
+      this.container.logger.error('Tournament check-in error:', error);
       return interaction.editReply({
-        content: "❌ Erreur lors du check-in.",
+        content: '❌ Erreur lors du check-in.',
       });
     }
   }
@@ -213,32 +213,32 @@ export class TournamentButtonHandler extends InteractionHandler {
 
       if (!tournament) {
         return interaction.editReply({
-          content: "❌ Tournoi non trouvé.",
+          content: '❌ Tournoi non trouvé.',
         });
       }
 
       const embed = new EmbedBuilder()
         .setTitle(`🏆 ${tournament.name}`)
-        .setDescription(tournament.description ?? "Pas de description")
+        .setDescription(tournament.description ?? 'Pas de description')
         .setColor(Colors.Primary)
         .addFields(
           {
-            name: "📅 Date",
-            value: tournament.date.toLocaleDateString("fr-FR"),
+            name: '📅 Date',
+            value: tournament.date.toLocaleDateString('fr-FR'),
             inline: true,
           },
           {
-            name: "📍 Lieu",
-            value: tournament.location ?? "En ligne",
+            name: '📍 Lieu',
+            value: tournament.location ?? 'En ligne',
             inline: true,
           },
-          { name: "🎮 Format", value: tournament.format, inline: true },
+          { name: '🎮 Format', value: tournament.format, inline: true },
           {
-            name: "👥 Participants",
+            name: '👥 Participants',
             value: `${tournament._count.participants}/${tournament.maxPlayers}`,
             inline: true,
           },
-          { name: "📊 Statut", value: tournament.status, inline: true },
+          { name: '📊 Statut', value: tournament.status, inline: true },
         )
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
@@ -248,19 +248,19 @@ export class TournamentButtonHandler extends InteractionHandler {
           .setCustomId(`tournament-register-${tournamentId}`)
           .setLabel("S'inscrire")
           .setStyle(ButtonStyle.Success)
-          .setEmoji("✍️"),
+          .setEmoji('✍️'),
         new ButtonBuilder()
           .setCustomId(`tournament-checkin-${tournamentId}`)
-          .setLabel("Check-in")
+          .setLabel('Check-in')
           .setStyle(ButtonStyle.Primary)
-          .setEmoji("✅"),
+          .setEmoji('✅'),
       );
 
       return interaction.editReply({ embeds: [embed], components: [row] });
     } catch (error) {
-      this.container.logger.error("Tournament info error:", error);
+      this.container.logger.error('Tournament info error:', error);
       return interaction.editReply({
-        content: "❌ Erreur lors de la récupération des infos.",
+        content: '❌ Erreur lors de la récupération des infos.',
       });
     }
   }

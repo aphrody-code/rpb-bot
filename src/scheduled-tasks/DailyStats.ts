@@ -1,7 +1,7 @@
-import { ScheduledTask } from "@sapphire/plugin-scheduled-tasks";
-import { EmbedBuilder, TextChannel } from "discord.js";
-import { Colors, RPB } from "../lib/constants.js";
-import prisma from "../lib/prisma.js";
+import { ScheduledTask } from '@sapphire/plugin-scheduled-tasks';
+import { EmbedBuilder, type TextChannel } from 'discord.js';
+import { Colors, RPB } from '../lib/constants.js';
+import prisma from '../lib/prisma.js';
 
 export class DailyStatsTask extends ScheduledTask {
   public constructor(
@@ -11,13 +11,13 @@ export class DailyStatsTask extends ScheduledTask {
     super(context, {
       ...options,
       // Run daily at 9:00 AM Paris time
-      pattern: "0 9 * * *",
-      timezone: "Europe/Paris",
+      pattern: '0 9 * * *',
+      timezone: 'Europe/Paris',
     });
   }
 
   public async run() {
-    this.container.logger.info("[Task] Running daily stats report...");
+    this.container.logger.info('[Task] Running daily stats report...');
 
     try {
       const now = new Date();
@@ -40,12 +40,12 @@ export class DailyStatsTask extends ScheduledTask {
         prisma.user.count(),
         prisma.tournament.count({
           where: {
-            status: { in: ["REGISTRATION_OPEN", "UNDERWAY", "CHECKIN"] },
+            status: { in: ['REGISTRATION_OPEN', 'UNDERWAY', 'CHECKIN'] },
           },
         }),
         prisma.tournament.count({
           where: {
-            status: "COMPLETE",
+            status: 'COMPLETE',
             updatedAt: { gte: yesterday },
           },
         }),
@@ -53,32 +53,32 @@ export class DailyStatsTask extends ScheduledTask {
       ]);
 
       const embed = new EmbedBuilder()
-        .setTitle("📊 Rapport Quotidien RPB")
-        .setDescription(`Statistiques du ${now.toLocaleDateString("fr-FR")}`)
+        .setTitle('📊 Rapport Quotidien RPB')
+        .setDescription(`Statistiques du ${now.toLocaleDateString('fr-FR')}`)
         .setColor(Colors.Info)
         .addFields(
           {
-            name: "👥 Nouveaux utilisateurs (24h)",
+            name: '👥 Nouveaux utilisateurs (24h)',
             value: `+${newUsers}`,
             inline: true,
           },
           {
-            name: "📈 Total utilisateurs",
+            name: '📈 Total utilisateurs',
             value: totalUsers.toString(),
             inline: true,
           },
           {
-            name: "🏆 Tournois actifs",
+            name: '🏆 Tournois actifs',
             value: activeTournaments.toString(),
             inline: true,
           },
           {
-            name: "✅ Tournois terminés (24h)",
+            name: '✅ Tournois terminés (24h)',
             value: completedTournamentsToday.toString(),
             inline: true,
           },
           {
-            name: "🎮 Participations totales",
+            name: '🎮 Participations totales',
             value: totalParticipations.toString(),
             inline: true,
           },
@@ -95,14 +95,14 @@ export class DailyStatsTask extends ScheduledTask {
         }
       }
 
-      this.container.logger.info("[Task] Daily stats report sent");
+      this.container.logger.info('[Task] Daily stats report sent');
     } catch (error) {
-      this.container.logger.error("[Task] Daily stats error:", error);
+      this.container.logger.error('[Task] Daily stats error:', error);
     }
   }
 }
 
-declare module "@sapphire/plugin-scheduled-tasks" {
+declare module '@sapphire/plugin-scheduled-tasks' {
   interface ScheduledTasks {
     DailyStats: never;
   }

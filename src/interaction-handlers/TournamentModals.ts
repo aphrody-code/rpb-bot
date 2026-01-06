@@ -1,11 +1,11 @@
 import {
   InteractionHandler,
   InteractionHandlerTypes,
-} from "@sapphire/framework";
-import type { ModalSubmitInteraction } from "discord.js";
-import { EmbedBuilder } from "discord.js";
-import { Colors, RPB } from "../lib/constants.js";
-import prisma from "../lib/prisma.js";
+} from '@sapphire/framework';
+import type { ModalSubmitInteraction } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
+import { Colors, RPB } from '../lib/constants.js';
+import prisma from '../lib/prisma.js';
 
 export class TournamentModalHandler extends InteractionHandler {
   public constructor(context: InteractionHandler.LoaderContext) {
@@ -15,13 +15,13 @@ export class TournamentModalHandler extends InteractionHandler {
   }
 
   public override parse(interaction: ModalSubmitInteraction) {
-    if (!interaction.customId.startsWith("tournament-register-modal-")) {
+    if (!interaction.customId.startsWith('tournament-register-modal-')) {
       return this.none();
     }
 
     const tournamentId = interaction.customId.replace(
-      "tournament-register-modal-",
-      "",
+      'tournament-register-modal-',
+      '',
     );
     return this.some({ tournamentId });
   }
@@ -32,8 +32,8 @@ export class TournamentModalHandler extends InteractionHandler {
   ) {
     await interaction.deferReply({ ephemeral: true });
 
-    const bladerName = interaction.fields.getTextInputValue("blader-name");
-    const beyblade = interaction.fields.getTextInputValue("beyblade");
+    const bladerName = interaction.fields.getTextInputValue('blader-name');
+    const beyblade = interaction.fields.getTextInputValue('beyblade');
 
     try {
       // Find or create user
@@ -75,21 +75,21 @@ export class TournamentModalHandler extends InteractionHandler {
 
       if (existingParticipant) {
         return interaction.editReply({
-          content: "❌ Tu es déjà inscrit à ce tournoi !",
+          content: '❌ Tu es déjà inscrit à ce tournoi !',
         });
       }
 
       // Check max participants
       if (tournament._count.participants >= tournament.maxPlayers) {
         return interaction.editReply({
-          content: "❌ Le tournoi est complet !",
+          content: '❌ Le tournoi est complet !',
         });
       }
 
       // Check tournament status
-      if (tournament.status !== "REGISTRATION_OPEN") {
+      if (tournament.status !== 'REGISTRATION_OPEN') {
         return interaction.editReply({
-          content: "❌ Les inscriptions sont fermées pour ce tournoi.",
+          content: '❌ Les inscriptions sont fermées pour ce tournoi.',
         });
       }
 
@@ -114,19 +114,19 @@ export class TournamentModalHandler extends InteractionHandler {
       });
 
       const embed = new EmbedBuilder()
-        .setTitle("🎉 Inscription confirmée !")
+        .setTitle('🎉 Inscription confirmée !')
         .setDescription(`Tu es maintenant inscrit à **${tournament.name}** !`)
         .setColor(Colors.Success)
         .addFields(
-          { name: "👤 Nom de Blader", value: bladerName, inline: true },
+          { name: '👤 Nom de Blader', value: bladerName, inline: true },
           {
-            name: "🌀 Toupie",
-            value: beyblade || "Non spécifiée",
+            name: '🌀 Toupie',
+            value: beyblade || 'Non spécifiée',
             inline: true,
           },
           {
-            name: "📅 Date",
-            value: tournament.date.toLocaleDateString("fr-FR"),
+            name: '📅 Date',
+            value: tournament.date.toLocaleDateString('fr-FR'),
             inline: true,
           },
         )
@@ -137,7 +137,7 @@ export class TournamentModalHandler extends InteractionHandler {
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Tournament registration error:", error);
+      this.container.logger.error('Tournament registration error:', error);
       return interaction.editReply({
         content: "❌ Erreur lors de l'inscription. Réessaie plus tard.",
       });

@@ -1,7 +1,6 @@
 import { Command } from '@sapphire/framework';
 import {
   ActionRowBuilder,
-  ApplicationCommandType,
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
@@ -9,29 +8,35 @@ import {
 import { Colors, RPB } from '../../lib/constants.js';
 import prisma from '../../lib/prisma.js';
 
-export class ProfileContextMenuCommand extends Command {
+export class ProfileCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, {
       ...options,
-      description: "Voir le profil Beyblade d'un utilisateur",
+      description: "Voir ton profil Beyblade ou celui d'un autre joueur",
     });
   }
 
   override registerApplicationCommands(registry: Command.Registry) {
-    // User context menu (right-click on user)
-    registry.registerContextMenuCommand((builder) =>
-      builder.setName('Profil Beyblade').setType(ApplicationCommandType.User),
+    registry.registerChatInputCommand((builder) =>
+      builder
+        .setName('profile')
+        .setDescription("Voir le profil d'un blader")
+        .addUserOption((opt) =>
+          opt
+            .setName('joueur')
+            .setDescription('Le blader à voir')
+            .setRequired(false),
+        ),
     );
   }
 
-  override async contextMenuRun(
-    interaction: Command.ContextMenuCommandInteraction,
+  override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction,
   ) {
-    if (!interaction.isUserContextMenuCommand()) return;
+    const targetUser =
+      interaction.options.getUser('joueur') ?? interaction.user;
 
-    await interaction.deferReply({ ephemeral: true });
-
-    const targetUser = interaction.targetUser;
+    await interaction.deferReply();
 
     try {
       // Find user in database
@@ -51,7 +56,9 @@ export class ProfileContextMenuCommand extends Command {
         const embed = new EmbedBuilder()
           .setTitle(`👤 ${targetUser.displayName}`)
           .setDescription(
-            "Cet utilisateur n'a pas encore de profil Beyblade sur RPB.",
+            targetUser.id === interaction.user.id
+              ? "Tu n'as pas encore de profil Beyblade. Utilise `/inscription rejoindre` pour en créer un !"
+              : "Cet utilisateur n'a pas encore de profil Beyblade sur RPB.",
           )
           .setColor(Colors.Warning)
           .setThumbnail(targetUser.displayAvatarURL({ size: 128 }))
@@ -69,7 +76,7 @@ export class ProfileContextMenuCommand extends Command {
 
       const embed = new EmbedBuilder()
         .setTitle(`🌀 ${profile.bladerName ?? targetUser.displayName}`)
-        .setDescription(profile.bio ?? 'Pas de bio')
+        .setDescription(profile.bio || 'Pas de bio définie.')
         .setColor(Colors.Primary)
         .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
         .addFields(
@@ -116,8 +123,10 @@ export class ProfileContextMenuCommand extends Command {
 
       // Add social links
       const socials = [];
-      if (profile.twitterHandle) socials.push(`🐦 @${profile.twitterHandle}`);
-      if (profile.tiktokHandle) socials.push(`🎵 @${profile.tiktokHandle}`);
+      if (profile.twitterHandle)
+        socials.push(`[Twitter](https://twitter.com/${profile.twitterHandle})`);
+      if (profile.tiktokHandle)
+        socials.push(`[TikTok](https://tiktok.com/@${profile.tiktokHandle})`);
       if (socials.length > 0) {
         embed.addFields({
           name: '📱 Réseaux sociaux',
@@ -132,17 +141,21 @@ export class ProfileContextMenuCommand extends Command {
         })
         .setTimestamp();
 
-      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`battle-challenge-${targetUser.id}`)
-          .setLabel('Défier en combat')
-          .setStyle(ButtonStyle.Primary)
-          .setEmoji('⚔️'),
-      );
+      const components = [];
+      if (targetUser.id !== interaction.user.id) {
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`battle-challenge-${targetUser.id}`)
+            .setLabel('Défier en combat')
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji('⚔️'),
+        );
+        components.push(row);
+      }
 
-      return interaction.editReply({ embeds: [embed], components: [row] });
+      return interaction.editReply({ embeds: [embed], components });
     } catch (error) {
-      this.container.logger.error('Profile context menu error:', error);
+      this.container.logger.error('Profile command error:', error);
       return interaction.editReply({
         content: '❌ Erreur lors de la récupération du profil.',
       });

@@ -1,6 +1,6 @@
-import { Duration, DurationFormatter } from "@sapphire/duration";
-import { EmbedBuilder } from "discord.js";
-import { Colors, RPB } from "./constants.js";
+import { Duration, DurationFormatter } from '@sapphire/duration';
+import { EmbedBuilder } from 'discord.js';
+import { Colors, RPB } from './constants.js';
 
 /**
  * Create a standardized embed for the bot
@@ -85,7 +85,7 @@ export function parseDuration(input: string): number | null {
 export function truncate(
   str: string,
   maxLength: number,
-  suffix = "...",
+  suffix = '...',
 ): string {
   if (str.length <= maxLength) return str;
   return str.slice(0, maxLength - suffix.length) + suffix;
@@ -99,10 +99,22 @@ export function formatNumber(num: number): string {
 }
 
 /**
+ * Pick a random element from an array
+ */
+export function pickRandom<T>(array: readonly T[]): T {
+  const element = array[Math.floor(Math.random() * array.length)];
+  if (element === undefined) {
+    if (array.length === 0) throw new Error('Cannot pick from empty array');
+    return array[0] as T;
+  }
+  return element;
+}
+
+/**
  * Escape markdown in a string
  */
 export function escapeMarkdown(text: string): string {
-  return text.replace(/[*_`~|\\]/g, "\\$&");
+  return text.replace(/[*_`~|\\]/g, '\\$&');
 }
 
 /**

@@ -1,143 +1,143 @@
-import { Command } from "@sapphire/framework";
+import { Command } from '@sapphire/framework';
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
   PermissionFlagsBits,
-} from "discord.js";
+} from 'discord.js';
+import { getChallongeClient } from '../../lib/challonge.js';
 import {
   importTournament,
   syncParticipants,
-} from "../../lib/challonge-sync.js";
-import { getChallongeClient } from "../../lib/challonge.js";
-import { Colors, RPB } from "../../lib/constants.js";
-import prisma from "../../lib/prisma.js";
+} from '../../lib/challonge-sync.js';
+import { Colors, RPB } from '../../lib/constants.js';
+import prisma from '../../lib/prisma.js';
 
 export class TournamentCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, {
       ...options,
-      description: "Gestion des tournois Beyblade via Challonge",
+      description: 'Gestion des tournois Beyblade via Challonge',
     });
   }
 
   override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand((builder) =>
       builder
-        .setName("tournoi")
-        .setDescription("Gestion des tournois Beyblade")
+        .setName('tournoi')
+        .setDescription('Gestion des tournois Beyblade')
         .addSubcommand((sub) =>
           sub
-            .setName("liste")
-            .setDescription("Affiche la liste des tournois actifs"),
+            .setName('liste')
+            .setDescription('Affiche la liste des tournois actifs'),
         )
         .addSubcommand((sub) =>
           sub
-            .setName("info")
+            .setName('info')
             .setDescription("Affiche les infos d'un tournoi")
             .addStringOption((opt) =>
               opt
-                .setName("id")
-                .setDescription("ID ou URL du tournoi Challonge")
+                .setName('id')
+                .setDescription('ID ou URL du tournoi Challonge')
                 .setRequired(true),
             ),
         )
         .addSubcommand((sub) =>
           sub
-            .setName("participants")
+            .setName('participants')
             .setDescription("Liste les participants d'un tournoi")
             .addStringOption((opt) =>
               opt
-                .setName("id")
-                .setDescription("ID ou URL du tournoi Challonge")
+                .setName('id')
+                .setDescription('ID ou URL du tournoi Challonge')
                 .setRequired(true),
             ),
         )
         .addSubcommand((sub) =>
           sub
-            .setName("matches")
+            .setName('matches')
             .setDescription("Liste les matches d'un tournoi")
             .addStringOption((opt) =>
               opt
-                .setName("id")
-                .setDescription("ID ou URL du tournoi Challonge")
+                .setName('id')
+                .setDescription('ID ou URL du tournoi Challonge')
                 .setRequired(true),
             )
             .addStringOption((opt) =>
               opt
-                .setName("état")
-                .setDescription("Filtrer par état")
+                .setName('état')
+                .setDescription('Filtrer par état')
                 .addChoices(
-                  { name: "🟡 En attente", value: "pending" },
-                  { name: "🟢 En cours", value: "open" },
-                  { name: "✅ Terminé", value: "complete" },
+                  { name: '🟡 En attente', value: 'pending' },
+                  { name: '🟢 En cours', value: 'open' },
+                  { name: '✅ Terminé', value: 'complete' },
                 ),
             ),
         )
         .addSubcommand((sub) =>
           sub
-            .setName("règles")
-            .setDescription("Affiche les règles des tournois RPB"),
+            .setName('règles')
+            .setDescription('Affiche les règles des tournois RPB'),
         )
         .addSubcommand((sub) =>
           sub
-            .setName("créer")
-            .setDescription("Créer un nouveau tournoi (Admin)")
+            .setName('créer')
+            .setDescription('Créer un nouveau tournoi (Admin)')
             .addStringOption((opt) =>
               opt
-                .setName("nom")
-                .setDescription("Nom du tournoi")
+                .setName('nom')
+                .setDescription('Nom du tournoi')
                 .setRequired(true),
             )
             .addStringOption((opt) =>
               opt
-                .setName("type")
-                .setDescription("Type de bracket")
+                .setName('type')
+                .setDescription('Type de bracket')
                 .addChoices(
-                  { name: "Single Elimination", value: "single elimination" },
-                  { name: "Double Elimination", value: "double elimination" },
-                  { name: "Round Robin", value: "round robin" },
-                  { name: "Swiss", value: "swiss" },
+                  { name: 'Single Elimination', value: 'single elimination' },
+                  { name: 'Double Elimination', value: 'double elimination' },
+                  { name: 'Round Robin', value: 'round robin' },
+                  { name: 'Swiss', value: 'swiss' },
                 ),
             )
             .addStringOption((opt) =>
               opt
-                .setName("description")
-                .setDescription("Description du tournoi"),
+                .setName('description')
+                .setDescription('Description du tournoi'),
             ),
         )
         .addSubcommand((sub) =>
           sub
-            .setName("importer")
+            .setName('importer')
             .setDescription(
-              "Importer un tournoi Challonge en base de données (Admin)",
+              'Importer un tournoi Challonge en base de données (Admin)',
             )
             .addStringOption((opt) =>
               opt
-                .setName("id")
-                .setDescription("ID ou URL du tournoi Challonge")
+                .setName('id')
+                .setDescription('ID ou URL du tournoi Challonge')
                 .setRequired(true),
             ),
         )
         .addSubcommand((sub) =>
           sub
-            .setName("sync")
+            .setName('sync')
             .setDescription(
               "Synchroniser les participants d'un tournoi (Admin)",
             )
             .addStringOption((opt) =>
               opt
-                .setName("id")
-                .setDescription("ID ou URL du tournoi Challonge")
+                .setName('id')
+                .setDescription('ID ou URL du tournoi Challonge')
                 .setRequired(true),
             ),
         )
         .addSubcommand((sub) =>
           sub
-            .setName("local")
+            .setName('local')
             .setDescription(
-              "Affiche les tournois depuis la base de données locale",
+              'Affiche les tournois depuis la base de données locale',
             ),
         ),
     );
@@ -149,27 +149,27 @@ export class TournamentCommand extends Command {
     const subcommand = interaction.options.getSubcommand();
 
     switch (subcommand) {
-      case "liste":
+      case 'liste':
         return this.listTournaments(interaction);
-      case "info":
+      case 'info':
         return this.showTournament(interaction);
-      case "participants":
+      case 'participants':
         return this.listParticipants(interaction);
-      case "matches":
+      case 'matches':
         return this.listMatches(interaction);
-      case "règles":
+      case 'règles':
         return this.showRules(interaction);
-      case "créer":
+      case 'créer':
         return this.createTournament(interaction);
-      case "importer":
+      case 'importer':
         return this.importTournament(interaction);
-      case "sync":
+      case 'sync':
         return this.syncTournament(interaction);
-      case "local":
+      case 'local':
         return this.listLocalTournaments(interaction);
       default:
         return interaction.reply({
-          content: "❌ Sous-commande inconnue.",
+          content: '❌ Sous-commande inconnue.',
           ephemeral: true,
         });
     }
@@ -185,13 +185,13 @@ export class TournamentCommand extends Command {
       const response = await challonge.listTournaments({ per_page: 10 });
 
       if (!response.data || response.data.length === 0) {
-        return interaction.editReply("📭 Aucun tournoi trouvé.");
+        return interaction.editReply('📭 Aucun tournoi trouvé.');
       }
 
       const embed = new EmbedBuilder()
-        .setTitle("🏆 Tournois RPB")
+        .setTitle('🏆 Tournois RPB')
         .setColor(Colors.Secondary)
-        .setDescription("Liste des tournois sur Challonge")
+        .setDescription('Liste des tournois sur Challonge')
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
 
@@ -208,9 +208,9 @@ export class TournamentCommand extends Command {
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Challonge API error:", error);
+      this.container.logger.error('Challonge API error:', error);
       return interaction.editReply(
-        "❌ Erreur lors de la récupération des tournois. Vérifie la clé API.",
+        '❌ Erreur lors de la récupération des tournois. Vérifie la clé API.',
       );
     }
   }
@@ -218,7 +218,7 @@ export class TournamentCommand extends Command {
   private async showTournament(
     interaction: Command.ChatInputCommandInteraction,
   ) {
-    const tournamentId = interaction.options.getString("id", true);
+    const tournamentId = interaction.options.getString('id', true);
     await interaction.deferReply();
 
     try {
@@ -230,43 +230,43 @@ export class TournamentCommand extends Command {
       const embed = new EmbedBuilder()
         .setTitle(`${stateEmoji} ${t.attributes.name}`)
         .setColor(Colors.Primary)
-        .setDescription(t.attributes.description ?? "Pas de description")
+        .setDescription(t.attributes.description ?? 'Pas de description')
         .addFields(
           {
-            name: "📊 Participants",
+            name: '📊 Participants',
             value: `${t.attributes.participantsCount}`,
             inline: true,
           },
           {
-            name: "🎮 Jeu",
-            value: t.attributes.gameName ?? "Beyblade",
+            name: '🎮 Jeu',
+            value: t.attributes.gameName ?? 'Beyblade',
             inline: true,
           },
-          { name: "🏷️ Type", value: t.attributes.tournamentType, inline: true },
-          { name: "📅 État", value: t.attributes.state, inline: true },
+          { name: '🏷️ Type', value: t.attributes.tournamentType, inline: true },
+          { name: '📅 État', value: t.attributes.state, inline: true },
         )
         .setFooter({ text: `ID: ${t.id}` })
         .setTimestamp();
 
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-          .setLabel("Voir sur Challonge")
+          .setLabel('Voir sur Challonge')
           .setStyle(ButtonStyle.Link)
           .setURL(`https://challonge.com/${t.attributes.url}`)
-          .setEmoji("🔗"),
+          .setEmoji('🔗'),
       );
 
       return interaction.editReply({ embeds: [embed], components: [row] });
     } catch (error) {
-      this.container.logger.error("Challonge API error:", error);
-      return interaction.editReply("❌ Tournoi non trouvé ou erreur API.");
+      this.container.logger.error('Challonge API error:', error);
+      return interaction.editReply('❌ Tournoi non trouvé ou erreur API.');
     }
   }
 
   private async listParticipants(
     interaction: Command.ChatInputCommandInteraction,
   ) {
-    const tournamentId = interaction.options.getString("id", true);
+    const tournamentId = interaction.options.getString('id', true);
     await interaction.deferReply();
 
     try {
@@ -274,23 +274,23 @@ export class TournamentCommand extends Command {
       const response = await challonge.listParticipants(tournamentId);
 
       if (!response.data || response.data.length === 0) {
-        return interaction.editReply("📭 Aucun participant inscrit.");
+        return interaction.editReply('📭 Aucun participant inscrit.');
       }
 
       const participants = response.data
         .sort((a, b) => a.attributes.seed - b.attributes.seed)
         .map(
           (p, i) =>
-            `${i + 1}. **${p.attributes.name}** ${p.attributes.checkedIn ? "✅" : ""}`,
+            `${i + 1}. **${p.attributes.name}** ${p.attributes.checkedIn ? '✅' : ''}`,
         )
-        .join("\n");
+        .join('\n');
 
       const embed = new EmbedBuilder()
-        .setTitle("👥 Participants")
+        .setTitle('👥 Participants')
         .setColor(Colors.Info)
         .setDescription(participants.slice(0, 4000))
         .addFields({
-          name: "📊 Total",
+          name: '📊 Total',
           value: `${response.data.length} participant(s)`,
         })
         .setFooter({ text: RPB.FullName })
@@ -298,19 +298,19 @@ export class TournamentCommand extends Command {
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Challonge API error:", error);
+      this.container.logger.error('Challonge API error:', error);
       return interaction.editReply(
-        "❌ Erreur lors de la récupération des participants.",
+        '❌ Erreur lors de la récupération des participants.',
       );
     }
   }
 
   private async listMatches(interaction: Command.ChatInputCommandInteraction) {
-    const tournamentId = interaction.options.getString("id", true);
-    const state = interaction.options.getString("état") as
-      | "open"
-      | "pending"
-      | "complete"
+    const tournamentId = interaction.options.getString('id', true);
+    const state = interaction.options.getString('état') as
+      | 'open'
+      | 'pending'
+      | 'complete'
       | null;
     await interaction.deferReply();
 
@@ -322,7 +322,7 @@ export class TournamentCommand extends Command {
       ]);
 
       if (!matchesRes.data || matchesRes.data.length === 0) {
-        return interaction.editReply("📭 Aucun match trouvé.");
+        return interaction.editReply('📭 Aucun match trouvé.');
       }
 
       // Create participant ID to name map
@@ -332,17 +332,17 @@ export class TournamentCommand extends Command {
       }
 
       const matches = matchesRes.data.slice(0, 15).map((m) => {
-        const p1 = participantMap.get(m.attributes.player1Id ?? "") ?? "TBD";
-        const p2 = participantMap.get(m.attributes.player2Id ?? "") ?? "TBD";
+        const p1 = participantMap.get(m.attributes.player1Id ?? '') ?? 'TBD';
+        const p2 = participantMap.get(m.attributes.player2Id ?? '') ?? 'TBD';
         const stateEmoji = this.getMatchStateEmoji(m.attributes.state);
-        const score = m.attributes.scores || "vs";
+        const score = m.attributes.scores || 'vs';
         return `${stateEmoji} **${p1}** ${score} **${p2}** (Round ${m.attributes.round})`;
       });
 
       const embed = new EmbedBuilder()
-        .setTitle("⚔️ Matches")
+        .setTitle('⚔️ Matches')
         .setColor(Colors.Primary)
-        .setDescription(matches.join("\n").slice(0, 4000))
+        .setDescription(matches.join('\n').slice(0, 4000))
         .setFooter({
           text: `${matchesRes.data.length} match(es) | ${RPB.FullName}`,
         })
@@ -350,9 +350,9 @@ export class TournamentCommand extends Command {
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Challonge API error:", error);
+      this.container.logger.error('Challonge API error:', error);
       return interaction.editReply(
-        "❌ Erreur lors de la récupération des matches.",
+        '❌ Erreur lors de la récupération des matches.',
       );
     }
   }
@@ -365,19 +365,19 @@ export class TournamentCommand extends Command {
       !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)
     ) {
       return interaction.reply({
-        content: "❌ Seuls les administrateurs peuvent créer des tournois.",
+        content: '❌ Seuls les administrateurs peuvent créer des tournois.',
         ephemeral: true,
       });
     }
 
-    const name = interaction.options.getString("nom", true);
-    const type = interaction.options.getString("type") as
-      | "single elimination"
-      | "double elimination"
-      | "round robin"
-      | "swiss"
+    const name = interaction.options.getString('nom', true);
+    const type = interaction.options.getString('type') as
+      | 'single elimination'
+      | 'double elimination'
+      | 'round robin'
+      | 'swiss'
       | null;
-    const description = interaction.options.getString("description");
+    const description = interaction.options.getString('description');
 
     await interaction.deferReply();
 
@@ -385,21 +385,21 @@ export class TournamentCommand extends Command {
       const challonge = getChallongeClient();
       const response = await challonge.createTournament({
         name,
-        tournamentType: type ?? "single elimination",
+        tournamentType: type ?? 'single elimination',
         description: description ?? `Tournoi organisé par ${RPB.FullName}`,
-        gameName: "Beyblade",
+        gameName: 'Beyblade',
         openSignup: true,
       });
 
       const t = response.data;
       const embed = new EmbedBuilder()
-        .setTitle("🎉 Tournoi créé !")
+        .setTitle('🎉 Tournoi créé !')
         .setColor(Colors.Success)
         .setDescription(`**${t.attributes.name}** a été créé avec succès !`)
         .addFields(
-          { name: "🏷️ Type", value: t.attributes.tournamentType, inline: true },
+          { name: '🏷️ Type', value: t.attributes.tournamentType, inline: true },
           {
-            name: "🔗 URL",
+            name: '🔗 URL',
             value: `https://challonge.com/${t.attributes.url}`,
             inline: false,
           },
@@ -409,53 +409,53 @@ export class TournamentCommand extends Command {
 
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-          .setLabel("Gérer sur Challonge")
+          .setLabel('Gérer sur Challonge')
           .setStyle(ButtonStyle.Link)
           .setURL(`https://challonge.com/${t.attributes.url}`)
-          .setEmoji("⚙️"),
+          .setEmoji('⚙️'),
       );
 
       return interaction.editReply({ embeds: [embed], components: [row] });
     } catch (error) {
-      this.container.logger.error("Challonge API error:", error);
-      return interaction.editReply("❌ Erreur lors de la création du tournoi.");
+      this.container.logger.error('Challonge API error:', error);
+      return interaction.editReply('❌ Erreur lors de la création du tournoi.');
     }
   }
 
   private async showRules(interaction: Command.ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
-      .setTitle("📜 Règles des Tournois RPB")
+      .setTitle('📜 Règles des Tournois RPB')
       .setColor(Colors.Info)
       .addFields(
         {
-          name: "1️⃣ Format Standard",
+          name: '1️⃣ Format Standard',
           value:
-            "• Match en **Best of 3** (2 victoires)\n" +
-            "• Points: Burst Finish = 2pts, Over/Spin = 1pt\n" +
-            "• Premier à 3 points gagne",
+            '• Match en **Best of 3** (2 victoires)\n' +
+            '• Points: Burst Finish = 2pts, Over/Spin = 1pt\n' +
+            '• Premier à 3 points gagne',
           inline: false,
         },
         {
-          name: "2️⃣ Équipement",
+          name: '2️⃣ Équipement',
           value:
-            "• Seules les toupies **officielles Takara Tomy/Hasbro** sont autorisées\n" +
-            "• Pas de modifications\n" +
-            "• Stadium officiel requis",
+            '• Seules les toupies **officielles Takara Tomy/Hasbro** sont autorisées\n' +
+            '• Pas de modifications\n' +
+            '• Stadium officiel requis',
           inline: false,
         },
         {
-          name: "3️⃣ Comportement",
+          name: '3️⃣ Comportement',
           value:
-            "• Respect des adversaires et arbitres\n" +
-            "• Pas de triche ou comportement antisportif\n" +
-            "• Fun avant tout ! 🎉",
+            '• Respect des adversaires et arbitres\n' +
+            '• Pas de triche ou comportement antisportif\n' +
+            '• Fun avant tout ! 🎉',
           inline: false,
         },
         {
-          name: "4️⃣ X-Treme Finish (Beyblade X)",
+          name: '4️⃣ X-Treme Finish (Beyblade X)',
           value:
-            "• Éjection via le rail X-treme = **3 points**\n" +
-            "• Finit immédiatement le match !",
+            '• Éjection via le rail X-treme = **3 points**\n' +
+            '• Finit immédiatement le match !',
           inline: false,
         },
       )
@@ -473,12 +473,12 @@ export class TournamentCommand extends Command {
       !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)
     ) {
       return interaction.reply({
-        content: "❌ Seuls les administrateurs peuvent importer des tournois.",
+        content: '❌ Seuls les administrateurs peuvent importer des tournois.',
         ephemeral: true,
       });
     }
 
-    const challongeId = interaction.options.getString("id", true);
+    const challongeId = interaction.options.getString('id', true);
     await interaction.deferReply();
 
     try {
@@ -489,7 +489,7 @@ export class TournamentCommand extends Command {
       }
 
       const embed = new EmbedBuilder()
-        .setTitle("✅ Tournoi importé !")
+        .setTitle('✅ Tournoi importé !')
         .setColor(Colors.Success)
         .setDescription(
           `Le tournoi a été importé en base de données.\n\n` +
@@ -498,17 +498,17 @@ export class TournamentCommand extends Command {
             `**Requêtes API utilisées:** ${result.apiRequestsUsed}`,
         )
         .addFields({
-          name: "💡 Info",
+          name: '💡 Info',
           value:
-            "Le tournoi est maintenant en cache. Les participants seront synchronisés " +
-            "automatiquement 24h avant le début du tournoi.",
+            'Le tournoi est maintenant en cache. Les participants seront synchronisés ' +
+            'automatiquement 24h avant le début du tournoi.',
         })
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Import tournament error:", error);
+      this.container.logger.error('Import tournament error:', error);
       return interaction.editReply("❌ Erreur lors de l'import du tournoi.");
     }
   }
@@ -522,12 +522,12 @@ export class TournamentCommand extends Command {
     ) {
       return interaction.reply({
         content:
-          "❌ Seuls les administrateurs peuvent synchroniser les tournois.",
+          '❌ Seuls les administrateurs peuvent synchroniser les tournois.',
         ephemeral: true,
       });
     }
 
-    const challongeId = interaction.options.getString("id", true);
+    const challongeId = interaction.options.getString('id', true);
     await interaction.deferReply();
 
     try {
@@ -538,7 +538,7 @@ export class TournamentCommand extends Command {
       }
 
       const embed = new EmbedBuilder()
-        .setTitle("🔄 Synchronisation terminée")
+        .setTitle('🔄 Synchronisation terminée')
         .setColor(Colors.Success)
         .setDescription(
           `**ID Challonge:** ${challongeId}\n` +
@@ -546,18 +546,18 @@ export class TournamentCommand extends Command {
             `**Requêtes API utilisées:** ${result.apiRequestsUsed}`,
         )
         .addFields({
-          name: "⚠️ Attention",
+          name: '⚠️ Attention',
           value:
-            "Chaque sync consomme 1 requête API. " +
-            "Limite: 500 requêtes/mois. Utilisez avec parcimonie !",
+            'Chaque sync consomme 1 requête API. ' +
+            'Limite: 500 requêtes/mois. Utilisez avec parcimonie !',
         })
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Sync tournament error:", error);
-      return interaction.editReply("❌ Erreur lors de la synchronisation.");
+      this.container.logger.error('Sync tournament error:', error);
+      return interaction.editReply('❌ Erreur lors de la synchronisation.');
     }
   }
 
@@ -568,7 +568,7 @@ export class TournamentCommand extends Command {
 
     try {
       const tournaments = await prisma.tournament.findMany({
-        orderBy: { date: "asc" },
+        orderBy: { date: 'asc' },
         include: {
           _count: { select: { participants: true } },
         },
@@ -576,14 +576,14 @@ export class TournamentCommand extends Command {
       });
 
       if (tournaments.length === 0) {
-        return interaction.editReply("📭 Aucun tournoi en base de données.");
+        return interaction.editReply('📭 Aucun tournoi en base de données.');
       }
 
       const embed = new EmbedBuilder()
-        .setTitle("🏆 Tournois RPB (Local)")
+        .setTitle('🏆 Tournois RPB (Local)')
         .setColor(Colors.Primary)
         .setDescription(
-          "Tournois stockés en base de données (pas de requête API)",
+          'Tournois stockés en base de données (pas de requête API)',
         )
         .setFooter({ text: RPB.FullName })
         .setTimestamp();
@@ -592,7 +592,7 @@ export class TournamentCommand extends Command {
         const stateEmoji = this.getLocalStateEmoji(t.status);
         const date = t.date
           ? `<t:${Math.floor(t.date.getTime() / 1000)}:R>`
-          : "Non défini";
+          : 'Non défini';
 
         embed.addFields({
           name: `${stateEmoji} ${t.name}`,
@@ -601,66 +601,66 @@ export class TournamentCommand extends Command {
             `📅 ${date}\n` +
             (t.challongeId
               ? `🔗 [Challonge](https://challonge.com/${t.challongeId})`
-              : ""),
+              : ''),
           inline: true,
         });
       }
 
       return interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("List local tournaments error:", error);
+      this.container.logger.error('List local tournaments error:', error);
       return interaction.editReply(
-        "❌ Erreur lors de la récupération des tournois.",
+        '❌ Erreur lors de la récupération des tournois.',
       );
     }
   }
 
   private getLocalStateEmoji(status: string): string {
     switch (status) {
-      case "UPCOMING":
-        return "📅";
-      case "REGISTRATION_OPEN":
-        return "🟡";
-      case "REGISTRATION_CLOSED":
-        return "🔒";
-      case "CHECKIN":
-        return "📋";
-      case "UNDERWAY":
-        return "🟢";
-      case "COMPLETE":
-        return "✅";
-      case "CANCELLED":
-        return "❌";
+      case 'UPCOMING':
+        return '📅';
+      case 'REGISTRATION_OPEN':
+        return '🟡';
+      case 'REGISTRATION_CLOSED':
+        return '🔒';
+      case 'CHECKIN':
+        return '📋';
+      case 'UNDERWAY':
+        return '🟢';
+      case 'COMPLETE':
+        return '✅';
+      case 'CANCELLED':
+        return '❌';
       default:
-        return "⚪";
+        return '⚪';
     }
   }
 
   private getStateEmoji(state: string): string {
     switch (state) {
-      case "pending":
-        return "🟡";
-      case "underway":
-      case "in_progress":
-        return "🟢";
-      case "complete":
-      case "ended":
-        return "✅";
+      case 'pending':
+        return '🟡';
+      case 'underway':
+      case 'in_progress':
+        return '🟢';
+      case 'complete':
+      case 'ended':
+        return '✅';
       default:
-        return "⚪";
+        return '⚪';
     }
   }
 
   private getMatchStateEmoji(state: string): string {
     switch (state) {
-      case "pending":
-        return "⏳";
-      case "open":
-        return "🟢";
-      case "complete":
-        return "✅";
+      case 'pending':
+        return '⏳';
+      case 'open':
+        return '🟢';
+      case 'complete':
+        return '✅';
       default:
-        return "⚪";
+        return '⚪';
     }
   }
 }

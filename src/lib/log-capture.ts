@@ -1,12 +1,12 @@
-import { container } from "@sapphire/framework";
-import { addLog } from "./api-server.js";
+import { container } from '@sapphire/framework';
+import { addLog } from './api-server.js';
 
 // Wrap the Sapphire logger to capture logs
 export function setupLogCapture() {
   const originalLogger = container.logger;
 
   // Create proxy for each log level
-  const levels = ["trace", "debug", "info", "warn", "error", "fatal"] as const;
+  const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'] as const;
 
   for (const level of levels) {
     const originalMethod = originalLogger[level].bind(originalLogger);
@@ -18,9 +18,9 @@ export function setupLogCapture() {
       // Capture the log
       const message = args
         .map((arg) =>
-          typeof arg === "object" ? JSON.stringify(arg) : String(arg),
+          typeof arg === 'object' ? JSON.stringify(arg) : String(arg),
         )
-        .join(" ");
+        .join(' ');
 
       addLog(level.toUpperCase(), message);
     };

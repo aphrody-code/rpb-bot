@@ -1,5 +1,5 @@
-import { ScheduledTask } from "@sapphire/plugin-scheduled-tasks";
-import prisma from "../lib/prisma.js";
+import { ScheduledTask } from '@sapphire/plugin-scheduled-tasks';
+import prisma from '../lib/prisma.js';
 
 export class SessionCleanupTask extends ScheduledTask {
   public constructor(
@@ -9,13 +9,13 @@ export class SessionCleanupTask extends ScheduledTask {
     super(context, {
       ...options,
       // Run daily at 3:00 AM (low traffic)
-      pattern: "0 3 * * *",
-      timezone: "Europe/Paris",
+      pattern: '0 3 * * *',
+      timezone: 'Europe/Paris',
     });
   }
 
   public async run() {
-    this.container.logger.info("[Task] Running session cleanup...");
+    this.container.logger.info('[Task] Running session cleanup...');
 
     try {
       // Delete expired sessions
@@ -40,12 +40,12 @@ export class SessionCleanupTask extends ScheduledTask {
         `[Task] Cleanup complete: ${deleted.count} sessions, ${deletedVerifications.count} verifications deleted`,
       );
     } catch (error) {
-      this.container.logger.error("[Task] Session cleanup error:", error);
+      this.container.logger.error('[Task] Session cleanup error:', error);
     }
   }
 }
 
-declare module "@sapphire/plugin-scheduled-tasks" {
+declare module '@sapphire/plugin-scheduled-tasks' {
   interface ScheduledTasks {
     SessionCleanup: never;
   }

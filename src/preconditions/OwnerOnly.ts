@@ -1,7 +1,7 @@
-import { Precondition } from "@sapphire/framework";
-import type { CommandInteraction, Message } from "discord.js";
+import { Precondition } from '@sapphire/framework';
+import type { CommandInteraction, Message } from 'discord.js';
 
-const OWNERS = process.env.BOT_OWNERS?.split(",") ?? [];
+const OWNERS = process.env.BOT_OWNERS?.split(',') ?? [];
 
 export class OwnerOnlyPrecondition extends Precondition {
   public override async messageRun(message: Message) {
@@ -17,12 +17,12 @@ export class OwnerOnlyPrecondition extends Precondition {
       ? this.ok()
       : this.error({
           message:
-            "Seuls les propriétaires du bot peuvent utiliser cette commande.",
+            'Seuls les propriétaires du bot peuvent utiliser cette commande.',
         });
   }
 }
 
-declare module "@sapphire/framework" {
+declare module '@sapphire/framework' {
   interface Preconditions {
     OwnerOnly: never;
   }

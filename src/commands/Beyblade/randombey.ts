@@ -1,41 +1,41 @@
-import { Command } from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
-import { RPB } from "../../lib/constants.js";
+import { Command } from '@sapphire/framework';
+import { EmbedBuilder } from 'discord.js';
+import { RPB } from '../../lib/constants.js';
 
 // Beyblade parts database
 const parts = {
   blades: [
-    "Dran Sword",
-    "Hells Scythe",
-    "Wizard Arrow",
-    "Knight Shield",
-    "Leon Claw",
-    "Phoenix Wing",
-    "Shark Edge",
-    "Unicorn Sting",
-    "Cobalt Drake",
-    "Viper Tail",
+    'Dran Sword',
+    'Hells Scythe',
+    'Wizard Arrow',
+    'Knight Shield',
+    'Leon Claw',
+    'Phoenix Wing',
+    'Shark Edge',
+    'Unicorn Sting',
+    'Cobalt Drake',
+    'Viper Tail',
   ],
-  ratchets: ["3-60", "4-60", "5-60", "3-80", "4-80", "5-80", "9-60", "9-80"],
+  ratchets: ['3-60', '4-60', '5-60', '3-80', '4-80', '5-80', '9-60', '9-80'],
   bits: [
-    "Flat",
-    "Ball",
-    "Point",
-    "Needle",
-    "Accel",
-    "Rush",
-    "High Needle",
-    "Low Flat",
-    "Gear Point",
-    "Gear Flat",
-    "Taper",
-    "Orb",
+    'Flat',
+    'Ball',
+    'Point',
+    'Needle',
+    'Accel',
+    'Rush',
+    'High Needle',
+    'Low Flat',
+    'Gear Point',
+    'Gear Flat',
+    'Taper',
+    'Orb',
   ],
   types: [
-    { name: "Attaque", emoji: "⚔️", color: 0xef4444 },
-    { name: "Défense", emoji: "🛡️", color: 0x3b82f6 },
-    { name: "Endurance", emoji: "🌀", color: 0x22c55e },
-    { name: "Équilibre", emoji: "⚖️", color: 0xfbbf24 },
+    { name: 'Attaque', emoji: '⚔️', color: 0xef4444 },
+    { name: 'Défense', emoji: '🛡️', color: 0x3b82f6 },
+    { name: 'Endurance', emoji: '🌀', color: 0x22c55e },
+    { name: 'Équilibre', emoji: '⚖️', color: 0xfbbf24 },
   ],
 };
 
@@ -43,15 +43,15 @@ export class RandomBeyCommand extends Command {
   constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, {
       ...options,
-      description: "Génère une combinaison Beyblade aléatoire !",
+      description: 'Génère une combinaison Beyblade aléatoire !',
     });
   }
 
   override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand((builder) =>
       builder
-        .setName("randombey")
-        .setDescription("Génère une combinaison Beyblade X aléatoire !"),
+        .setName('randombey')
+        .setDescription('Génère une combinaison Beyblade X aléatoire !'),
     );
   }
 
@@ -73,32 +73,32 @@ export class RandomBeyCommand extends Command {
 
     const statsBar = (value: number) => {
       const filled = Math.round(value / 10);
-      return "█".repeat(filled) + "░".repeat(10 - filled);
+      return '█'.repeat(filled) + '░'.repeat(10 - filled);
     };
 
     const embed = new EmbedBuilder()
-      .setTitle("🎲 Combo Beyblade Aléatoire")
+      .setTitle('🎲 Combo Beyblade Aléatoire')
       .setDescription(`**${combo}**`)
       .setColor(type.color)
       .addFields(
-        { name: "🔄 Blade", value: blade, inline: true },
-        { name: "⚙️ Ratchet", value: ratchet, inline: true },
-        { name: "💠 Bit", value: bit, inline: true },
+        { name: '🔄 Blade', value: blade, inline: true },
+        { name: '⚙️ Ratchet', value: ratchet, inline: true },
+        { name: '💠 Bit', value: bit, inline: true },
         { name: `${type.emoji} Type`, value: type.name, inline: true },
-        { name: "⚖️ Poids", value: `${weight}g`, inline: true },
-        { name: "\u200B", value: "\u200B", inline: true },
+        { name: '⚖️ Poids', value: `${weight}g`, inline: true },
+        { name: '\u200B', value: '\u200B', inline: true },
         {
-          name: "⚔️ Attaque",
+          name: '⚔️ Attaque',
           value: `${statsBar(attack)} ${attack}`,
           inline: false,
         },
         {
-          name: "🛡️ Défense",
+          name: '🛡️ Défense',
           value: `${statsBar(defense)} ${defense}`,
           inline: false,
         },
         {
-          name: "🌀 Endurance",
+          name: '🌀 Endurance',
           value: `${statsBar(stamina)} ${stamina}`,
           inline: false,
         },
@@ -112,7 +112,7 @@ export class RandomBeyCommand extends Command {
   private random<T>(array: readonly T[]): T {
     const index = Math.floor(Math.random() * array.length);
     const item = array[index];
-    if (item === undefined) throw new Error("Array is empty");
+    if (item === undefined) throw new Error('Array is empty');
     return item;
   }
 
