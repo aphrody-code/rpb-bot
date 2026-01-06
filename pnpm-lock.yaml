@@ -49,7 +49,7 @@ importers:
         version: 3.18.2
       crawlee:
         specifier: ^3.15.3
-        version: 3.15.3(@types/node@24.10.1)(puppeteer@24.34.0(typescript@5.9.3))
+        version: 3.15.3(@types/node@25.0.3)(puppeteer@24.34.0(typescript@5.9.3))
       discord-api-types:
         specifier: ^0.38.34
         version: 0.38.34
@@ -82,8 +82,8 @@ importers:
         specifier: ^24.0.3
         version: 24.0.3
       '@types/node':
-        specifier: ^24.10.1
-        version: 24.10.1
+        specifier: ^25.0.3
+        version: 25.0.3
       '@types/node-fetch':
         specifier: ^2.6.13
         version: 2.6.13
@@ -931,8 +931,8 @@ packages:
   '@types/node-fetch@2.6.13':
     resolution: {integrity: sha512-QGpRVpzSaUs30JBSGPjOg4Uveu384erbHBoT1zeONvyCfwQxIkUshLAOqN/k9EjGviPRmWTTe6aH2qySWKTVSw==}
 
-  '@types/node@24.10.1':
-    resolution: {integrity: sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==}
+  '@types/node@25.0.3':
+    resolution: {integrity: sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA==}
 
   '@types/pg@8.16.0':
     resolution: {integrity: sha512-RmhMd/wD+CF8Dfo+cVIy3RR5cl8CyfXQ0tGgW6XBL8L4LM/UTEbNXYRbLwU6w+CgrKBNbrQWt4FUtTfaU5jSYQ==}
@@ -2988,12 +2988,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@crawlee/cli@3.15.3(@types/node@24.10.1)':
+  '@crawlee/cli@3.15.3(@types/node@25.0.3)':
     dependencies:
-      '@crawlee/templates': 3.15.3(@types/node@24.10.1)
+      '@crawlee/templates': 3.15.3(@types/node@25.0.3)
       ansi-colors: 4.1.3
       fs-extra: 11.3.3
-      inquirer: 8.2.7(@types/node@24.10.1)
+      inquirer: 8.2.7(@types/node@25.0.3)
       tslib: 2.8.1
       yargonaut: 1.1.4
       yargs: 17.7.2
@@ -3133,10 +3133,10 @@ snapshots:
       - playwright
       - supports-color
 
-  '@crawlee/templates@3.15.3(@types/node@24.10.1)':
+  '@crawlee/templates@3.15.3(@types/node@25.0.3)':
     dependencies:
       ansi-colors: 4.1.3
-      inquirer: 9.3.8(@types/node@24.10.1)
+      inquirer: 9.3.8(@types/node@25.0.3)
       tslib: 2.8.1
       yargonaut: 1.1.4
       yargs: 17.7.2
@@ -3378,12 +3378,12 @@ snapshots:
     dependencies:
       hono: 4.10.6
 
-  '@inquirer/external-editor@1.0.3(@types/node@24.10.1)':
+  '@inquirer/external-editor@1.0.3(@types/node@25.0.3)':
     dependencies:
       chardet: 2.1.1
       iconv-lite: 0.7.1
     optionalDependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.3
 
   '@inquirer/figures@1.0.15': {}
 
@@ -3735,22 +3735,22 @@ snapshots:
 
   '@types/jsdom@21.1.7':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.3
       '@types/tough-cookie': 4.0.5
       parse5: 7.3.0
 
   '@types/node-fetch@2.6.13':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.3
       form-data: 4.0.5
 
-  '@types/node@24.10.1':
+  '@types/node@25.0.3':
     dependencies:
       undici-types: 7.16.0
 
   '@types/pg@8.16.0':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.3
       pg-protocol: 1.10.3
       pg-types: 2.2.0
 
@@ -3760,7 +3760,7 @@ snapshots:
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.3
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -3768,11 +3768,11 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.3
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.3
     optional: true
 
   '@vladfrangu/async_event_emitter@2.4.6': {}
@@ -4059,13 +4059,13 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  crawlee@3.15.3(@types/node@24.10.1)(puppeteer@24.34.0(typescript@5.9.3)):
+  crawlee@3.15.3(@types/node@25.0.3)(puppeteer@24.34.0(typescript@5.9.3)):
     dependencies:
       '@crawlee/basic': 3.15.3
       '@crawlee/browser': 3.15.3(puppeteer@24.34.0(typescript@5.9.3))
       '@crawlee/browser-pool': 3.15.3(puppeteer@24.34.0(typescript@5.9.3))
       '@crawlee/cheerio': 3.15.3
-      '@crawlee/cli': 3.15.3(@types/node@24.10.1)
+      '@crawlee/cli': 3.15.3(@types/node@25.0.3)
       '@crawlee/core': 3.15.3
       '@crawlee/http': 3.15.3
       '@crawlee/jsdom': 3.15.3
@@ -4711,9 +4711,9 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  inquirer@8.2.7(@types/node@24.10.1):
+  inquirer@8.2.7(@types/node@25.0.3):
     dependencies:
-      '@inquirer/external-editor': 1.0.3(@types/node@24.10.1)
+      '@inquirer/external-editor': 1.0.3(@types/node@25.0.3)
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       cli-cursor: 3.1.0
@@ -4731,9 +4731,9 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  inquirer@9.3.8(@types/node@24.10.1):
+  inquirer@9.3.8(@types/node@25.0.3):
     dependencies:
-      '@inquirer/external-editor': 1.0.3(@types/node@24.10.1)
+      '@inquirer/external-editor': 1.0.3(@types/node@25.0.3)
       '@inquirer/figures': 1.0.15
       ansi-escapes: 4.3.2
       cli-width: 4.1.0
@@ -5292,7 +5292,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 24.10.1
+      '@types/node': 25.0.3
       long: 5.3.2
 
   proxy-agent@6.5.0:
