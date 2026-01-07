@@ -12,6 +12,7 @@ import 'dotenv/config';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startApiServer } from './lib/api-server.js';
+import { generateCustomCommands } from './lib/command-generator.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -31,6 +32,9 @@ const apiPort = parseInt(process.env.BOT_API_PORT ?? '3001', 10);
 startApiServer(apiPort);
 
 try {
+  // Generate custom commands from DB before starting
+  await generateCustomCommands();
+
   const client = new SapphireClient({
     baseUserDirectory: __dirname,
     intents: [

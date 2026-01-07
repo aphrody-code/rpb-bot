@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -498,4 +497,26 @@ enum ProductLine {
   BX // Basic Line
   UX // Unique Line
   CX // Custom Line
+}
+
+// ============================================================================
+// RPB - Bot Custom Commands
+// ============================================================================
+
+model BotCommand {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  response    String   // Text response or JSON for embeds
+  enabled     Boolean  @default(true)
+  
+  // Future proofing
+  aliases     String[] @default([])
+  cooldown    Int      @default(0)
+  allowedRoles String[] @default([])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("bot_commands")
 }

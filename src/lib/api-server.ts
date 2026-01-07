@@ -122,11 +122,14 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         return sendJSON(res, { logs: getLogs(tail) });
       }
 
-      case '/api/restart': {
+      case '/api/restart':
+      case '/api/sync-commands': {
         if (req.method !== 'POST')
           return sendError(res, 'Method not allowed', 405);
-        sendJSON(res, { ok: true, message: 'Bot restarting...' });
-        container.logger.info('Restart requested via API. Exiting in 1s...');
+        sendJSON(res, { ok: true, message: 'Bot syncing/restarting...' });
+        container.logger.info(
+          'Sync/Restart requested via API. Exiting in 1s...',
+        );
         setTimeout(() => process.exit(0), 1000);
         return;
       }

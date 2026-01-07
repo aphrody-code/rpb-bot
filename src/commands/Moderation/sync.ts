@@ -70,8 +70,33 @@ export class SyncCommand extends Subcommand {
 
     try {
       this.container.logger.info(`Starting news sync from ${newsUrl}`);
-      const urls = await scraper.mapSite(newsUrl);
-      const targets = urls.filter((u) => u.includes('/news/')).slice(0, 3);
+
+      // Fetch news page directly to extract links
+      const response = await fetch(newsUrl);
+      const html = await response.text();
+
+      // Extract news links (format: news/news241227.html or similar)
+      const linkPattern = /href="(\.?\/?news\/\w+\.html)"/g;
+      const targets: string[] = [];
+      let match: RegExpExecArray | null = null;
+
+      match = linkPattern.exec(html);
+      while (match !== null && targets.length < 3) {
+        const path = match[1];
+        if (path) {
+          const fullUrl = path.startsWith('http')
+            ? path
+            : `https://beyblade.takaratomy.co.jp/beyblade-x/news/${path.split('/').pop()}`;
+          if (!targets.includes(fullUrl)) targets.push(fullUrl);
+        }
+        match = linkPattern.exec(html);
+      }
+
+      if (targets.length === 0) {
+        return interaction.editReply(
+          '❌ Aucun article de news trouvé sur la page.',
+        );
+      }
 
       const results = await scraper.scrape(targets, 'fr');
       let created = 0;

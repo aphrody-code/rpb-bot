@@ -1,0 +1,9 @@
+
+> @ dev /root/rpb-bot
+> tsx src/index.ts
+
+2026-01-07 00:56:50 - INFO  - Bot API server listening on port 3001
+2026-01-07 00:56:53 - INFO  - ApplicationCommandRegistries: Initializing...
+2026-01-07 00:56:53 - INFO  - Connecté en tant que : RPBey#5070
+2026-01-07 00:56:53 - INFO  - Synchronisation de 13 administrateurs...
+2026-01-07 00:56:53 - INFO  - Synchronisation des rôles terminée.

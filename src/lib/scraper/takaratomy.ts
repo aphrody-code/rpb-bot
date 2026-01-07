@@ -1,11 +1,6 @@
+import type { PrismaClient } from '@prisma/client';
+import { PartType, ProductLine, ProductType } from '@prisma/client';
 import { log } from 'crawlee';
-import type { PrismaClient } from '../../generated/prisma/index.js';
-import {
-  PartType,
-  ProductLine,
-  ProductType,
-} from '../../generated/prisma/index.js';
-import { ScraperService } from './index.js';
 
 export interface OfficialProduct {
   code: string;
@@ -83,37 +78,42 @@ export class TakaraTomyScraper {
   private extractProductsFromHtml(html: string): OfficialProduct[] {
     const products: OfficialProduct[] = [];
 
-    // Pattern from dashboard script
+    // Pattern based on actual HTML structure (Jan 2026)
+    // <a href="bx01.html"> ... <b>BX-01<span>Name</span></b> ... <p class="category"><span>Type</span></p> ... <i>¥1,980...</i> ... <i class="red">Date...</i>
     const productPattern =
-      /\[((?:BX|UX|CX)-\d{2,3})\s+(?:【([^】]+)】\s*)?([^\]¥]+?)\s+(スターター|ブースター|ランダムブースター|ダブルスターター|セット|ツール|カスタマイズセット)\s+¥([\d,]+)（税込）\s*(\d{4}\.\d{1,2}\.\d{1,2})発売[^\]]*\]\(([^)]+)\)/g;
+      /<a href="([^"]+)">[\s\S]*?<b>((?:BX|UX|CX)-\d{2,3})<span>([^<]+)<\/span><\/b>[\s\S]*?<p class="category"><span>([^<]+)<\/span><\/p>[\s\S]*?<i>¥([\d,]+)[^<]*<\/i>[\s\S]*?<i class="red">([\d.]+)[^<]*<\/i>/g;
 
     let match: RegExpExecArray | null;
     while (true) {
       match = productPattern.exec(html);
       if (match === null) break;
-      const code = match[1];
-      const limitedInfo = match[2];
-      const name = (match[3] || '').trim();
-      const productTypeStr = match[4];
-      const priceStr = match[5];
-      const releaseDate = match[6];
-      const url = match[7];
 
-      if (!code || !name) continue;
+      const url = match[1];
+      const code = match[2];
+      const name = match[3]?.trim();
+      const productTypeStr = match[4]?.trim();
+      const priceStr = match[5];
+      const releaseDateStr = match[6];
+
+      if (!code || !name || !productTypeStr || !releaseDateStr) continue;
 
       const price = parseInt((priceStr || '0').replace(',', ''), 10);
-      const isLimited = !!limitedInfo;
+      const isLimited =
+        name.includes('限定') || productTypeStr.includes('限定');
       const { blade, ratchet, bit } = this.parseBeyName(name);
+
+      // Normalize date (2023.7.15 -> 2023-07-15)
+      const releaseDate = releaseDateStr.replace(/\./g, '-');
 
       products.push({
         code,
         name,
         productType: productTypeStr || 'OTHER',
         price,
-        releaseDate: releaseDate || '',
+        releaseDate,
         url: url || '',
         isLimited,
-        limitedType: limitedInfo || undefined,
+        limitedType: isLimited ? 'Limited' : undefined,
         bladeName: blade,
         ratchet,
         bit,
