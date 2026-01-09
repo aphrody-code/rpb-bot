@@ -139,6 +139,35 @@ export class TournamentCommand extends Command {
             .setDescription(
               'Affiche les tournois depuis la base de données locale',
             ),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('score')
+            .setDescription("Signaler le score d'un match")
+            .addStringOption((opt) =>
+              opt
+                .setName('tournoi')
+                .setDescription('ID du tournoi Challonge')
+                .setRequired(true),
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName('match')
+                .setDescription('ID du match Challonge')
+                .setRequired(true),
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName('score')
+                .setDescription('Score du match (ex: 2-1)')
+                .setRequired(true),
+            )
+            .addUserOption((opt) =>
+              opt
+                .setName('gagnant')
+                .setDescription('Le gagnant du match')
+                .setRequired(true),
+            ),
         ),
     );
   }
@@ -167,6 +196,8 @@ export class TournamentCommand extends Command {
         return this.syncTournament(interaction);
       case 'local':
         return this.listLocalTournaments(interaction);
+      case 'score':
+        return this.reportScore(interaction);
       default:
         return interaction.reply({
           content: '❌ Sous-commande inconnue.',
@@ -336,7 +367,7 @@ export class TournamentCommand extends Command {
         const p2 = participantMap.get(m.attributes.player2Id ?? '') ?? 'TBD';
         const stateEmoji = this.getMatchStateEmoji(m.attributes.state);
         const score = m.attributes.scores || 'vs';
-        return `${stateEmoji} **${p1}** ${score} **${p2}** (Round ${m.attributes.round})`;
+        return `${stateEmoji} \`${m.id}\`: **${p1}** ${score} **${p2}** (Round ${m.attributes.round})`;
       });
 
       const embed = new EmbedBuilder()
@@ -611,6 +642,47 @@ export class TournamentCommand extends Command {
       this.container.logger.error('List local tournaments error:', error);
       return interaction.editReply(
         '❌ Erreur lors de la récupération des tournois.',
+      );
+    }
+  }
+
+  private async reportScore(interaction: Command.ChatInputCommandInteraction) {
+    const tournamentId = interaction.options.getString('tournoi', true);
+    const matchId = interaction.options.getString('match', true);
+    const score = interaction.options.getString('score', true);
+    const winner = interaction.options.getUser('gagnant', true);
+
+    await interaction.deferReply();
+
+    try {
+      const { reportMatchScore } = await import('../../lib/challonge-sync.js');
+      const result = await reportMatchScore(
+        tournamentId,
+        matchId,
+        winner.id,
+        score,
+      );
+
+      if (!result.success) {
+        return interaction.editReply(`❌ Erreur: ${result.error}`);
+      }
+
+      const embed = new EmbedBuilder()
+        .setTitle('✅ Score enregistré !')
+        .setColor(Colors.Success)
+        .setDescription(
+          `Le score du match **${matchId}** a été mis à jour sur Challonge.\n\n` +
+            `**Gagnant:** <@${winner.id}>\n` +
+            `**Score:** ${score}`,
+        )
+        .setFooter({ text: RPB.FullName })
+        .setTimestamp();
+
+      return interaction.editReply({ embeds: [embed] });
+    } catch (error) {
+      this.container.logger.error('Report score error:', error);
+      return interaction.editReply(
+        "❌ Erreur lors de l'enregistrement du score.",
       );
     }
   }

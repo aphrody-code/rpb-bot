@@ -287,9 +287,98 @@ export async function getTournamentsNeedingSync(): Promise<string[]> {
 }
 
 /**
- * Mappe l'état Challonge vers notre enum TournamentStatus
+ * Reporte le score d'un match sur Challonge et met à jour la DB locale
  */
-function mapChallongeState(
+export async function reportMatchScore(
+  challongeTournamentId: string,
+  challongeMatchId: string,
+  winnerDiscordId: string,
+  scoreCsv: string,
+): Promise<{ success: boolean; error?: string; apiRequestsUsed: number }> {
+  const challonge = getChallongeClient();
+  let apiRequestsUsed = 0;
+
+  try {
+    // 1. Trouver l'utilisateur gagnant
+    const user = await prisma.user.findUnique({
+      where: { discordId: winnerDiscordId },
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        error: 'Gagnant non trouvé dans la base de données.',
+        apiRequestsUsed: 0,
+      };
+    }
+
+    // 2. Trouver le participant correspondant dans le tournoi
+    const dbTournament = await prisma.tournament.findUnique({
+      where: { challongeId: challongeTournamentId },
+    });
+
+    if (!dbTournament) {
+      return {
+        success: false,
+        error: 'Tournoi non trouvé en base de données.',
+        apiRequestsUsed: 0,
+      };
+    }
+
+    const participant = await prisma.tournamentParticipant.findUnique({
+      where: {
+        tournamentId_userId: {
+          tournamentId: dbTournament.id,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!participant || !participant.challongeParticipantId) {
+      return {
+        success: false,
+        error: "Le gagnant n'est pas un participant valide de ce tournoi.",
+        apiRequestsUsed: 0,
+      };
+    }
+
+    // 3. Envoyer à Challonge (1 requête)
+    await challonge.updateMatch(challongeTournamentId, challongeMatchId, {
+      winnerId: participant.challongeParticipantId,
+      scoresCsv: scoreCsv,
+    });
+    apiRequestsUsed++;
+
+    // 4. Mettre à jour la DB locale (si le match existe)
+    await prisma.tournamentMatch.updateMany({
+      where: {
+        tournamentId: dbTournament.id,
+        challongeMatchId: challongeMatchId,
+      },
+      data: {
+        winnerId: user.id,
+        score: scoreCsv,
+        state: 'complete',
+      },
+    });
+
+    return {
+      success: true,
+      apiRequestsUsed,
+    };
+  } catch (error) {
+    container.logger.error('[Sync] Erreur report score:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
+      apiRequestsUsed,
+    };
+  }
+}
+
+/**
+ * Mappe l'état Challonge vers notre enum TournamentStatus
+ */ function mapChallongeState(
   state: string,
 ):
   | 'UPCOMING'

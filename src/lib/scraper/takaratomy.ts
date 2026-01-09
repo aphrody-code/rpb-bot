@@ -1,6 +1,10 @@
-import type { PrismaClient } from '@prisma/client';
-import { PartType, ProductLine, ProductType } from '@prisma/client';
 import { log } from 'crawlee';
+import type { PrismaClient } from '../../generated/client/index.js';
+import {
+  PartType,
+  ProductLine,
+  ProductType,
+} from '../../generated/client/index.js';
 
 export interface OfficialProduct {
   code: string;

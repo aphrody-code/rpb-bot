@@ -115,7 +115,7 @@ export class ProfileContextMenuCommand extends Command {
       }
 
       // Add social links
-      const socials = [];
+      const socials: string[] = [];
       if (profile.twitterHandle) socials.push(`🐦 @${profile.twitterHandle}`);
       if (profile.tiktokHandle) socials.push(`🎵 @${profile.tiktokHandle}`);
       if (socials.length > 0) {

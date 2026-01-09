@@ -18,12 +18,16 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
+COPY prisma.config.ts ./
 
-# Generate Prisma Client
-RUN pnpm exec prisma generate
+# Generate Prisma Client (Custom Output)
+RUN pnpm exec prisma generate --schema=./prisma/schema.prisma
 
 # Build TypeScript to JS
 RUN pnpm run build
+
+# Copy generated client to dist
+RUN mkdir -p dist/generated && cp -r src/generated/* dist/generated/
 
 # ============================================
 # Production stage
@@ -33,13 +37,14 @@ FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Install only production dependencies
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+# Copy package.json for runtime dependencies
+COPY package.json ./
 
-# Copy built files
+# Install runtime dependencies with npm (flat node_modules)
+RUN npm install --omit=dev
+
+# Copy built files (including generated client)
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/generated ./src/generated
 
 # Expose API port
 EXPOSE 3001

@@ -6,6 +6,7 @@
     "noEmit": true,
 
     // Sécurité renforcée
+    "noImplicitAny": false,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
 

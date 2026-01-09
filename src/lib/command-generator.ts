@@ -29,9 +29,7 @@ export class CustomCommand extends Command {
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    const response = 
-${response.replace(/`/g, '`')}
-;
+    const response = \`${response.replace(/`/g, '\\`').replace(/\${/g, '\\${')}\`;
     
     // Check if response is JSON (simple check)
     if (response.trim().startsWith('{')) {

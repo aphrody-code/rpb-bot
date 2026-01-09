@@ -1,6 +1,5 @@
 import {
   ApplicationCommandRegistries,
-  container,
   RegisterBehavior,
   SapphireClient,
 } from '@sapphire/framework';
@@ -27,10 +26,6 @@ if (process.env.NODE_ENV !== 'production' && process.env.GUILD_ID) {
   ApplicationCommandRegistries.setDefaultGuildIds([process.env.GUILD_ID]);
 }
 
-// Start API server for dashboard integration
-const apiPort = parseInt(process.env.BOT_API_PORT ?? '3001', 10);
-startApiServer(apiPort);
-
 try {
   // Generate custom commands from DB before starting
   await generateCustomCommands();
@@ -43,6 +38,7 @@ try {
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.MessageContent,
       GatewayIntentBits.GuildModeration,
+      GatewayIntentBits.GuildPresences, // Required for tracking online status
     ],
     partials: [Partials.Message, Partials.Channel, Partials.GuildMember],
     loadMessageCommandListeners: true,
@@ -58,7 +54,11 @@ try {
   });
 
   await client.login(process.env.DISCORD_TOKEN);
+
+  // Start API server for dashboard integration after login
+  const apiPort = parseInt(process.env.BOT_API_PORT ?? '3001', 10);
+  startApiServer(apiPort);
 } catch (err) {
-  container.logger.error('Failed to login:', err);
+  console.error('Failed to start bot:', err);
   process.exitCode = 1;
 }

@@ -68,7 +68,9 @@ export class ScraperService {
       'footer',
       'header',
       'aside',
+      // biome-ignore lint/suspicious/noExplicitAny: library types issue
     ] as any);
+    // biome-ignore lint/suspicious/noExplicitAny: library types issue
     this.turndown.remove('svg' as any);
 
     this.translator = new TranslatorService();
@@ -212,6 +214,7 @@ export class ScraperService {
       }
 
       // Basic product detection
+      // biome-ignore lint/suspicious/noExplicitAny: dynamic scraper data
       let product: any = null;
       const productMatch = title.match(/((?:BX|UX|CX)-\d{2,3})/);
       if (productMatch) {
@@ -280,6 +283,7 @@ export class ScraperService {
           .filter((href) => href.startsWith('http'));
 
         // Basic product info extraction
+        // biome-ignore lint/suspicious/noExplicitAny: dynamic scraper data
         let product: any = null;
         if (document.body.innerText.match(/((?:BX|UX|CX)-\d{2,3})/)) {
           const codeMatch = document.body.innerText.match(

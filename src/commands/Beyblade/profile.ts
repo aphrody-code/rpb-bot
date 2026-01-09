@@ -122,7 +122,7 @@ export class ProfileCommand extends Command {
       }
 
       // Add social links
-      const socials = [];
+      const socials: string[] = [];
       if (profile.twitterHandle)
         socials.push(`[Twitter](https://twitter.com/${profile.twitterHandle})`);
       if (profile.tiktokHandle)
@@ -141,7 +141,7 @@ export class ProfileCommand extends Command {
         })
         .setTimestamp();
 
-      const components = [];
+      const components: ActionRowBuilder<ButtonBuilder>[] = [];
       if (targetUser.id !== interaction.user.id) {
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
