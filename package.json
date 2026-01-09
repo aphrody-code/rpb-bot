@@ -29,7 +29,7 @@
     "pg": "^8.16.3",
     "puppeteer": "^24.34.0",
     "turndown": "^7.2.2",
-    "undici": "^7.16.0",
+    "undici": "^7.18.2",
     "prisma": "^7.2.0"
   },
   "devDependencies": {
